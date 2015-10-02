@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.canvas.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.chart.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+<Pane fx:id="mainPane" maxHeight="960" maxWidth="1280" minHeight="240" minWidth="320" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.arek00.clusterizer.display.DistanceDisplay.ViewController">
+   <children>
+      <Slider fx:id="scaleSlider" blockIncrement="0.25" layoutX="14.0" layoutY="357.0" max="4.0" min="1.0" onDragDetected="#onScale" showTickMarks="true" value="1.0" />
+      <Label fx:id="scaleValueLabel" layoutX="66.0" layoutY="374.0" text="1" />
+      <AnchorPane fx:id="pointsPane" mouseTransparent="true" nodeOrientation="LEFT_TO_RIGHT" prefHeight="326.0" prefWidth="600.0" />
+   </children>
+</Pane>

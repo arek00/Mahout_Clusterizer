@@ -1,6 +1,7 @@
 package com.arek00.clusterizer.demos;
 
 import com.arek00.clusterizer.ArticleUtils.ArticleRetriever;
+import com.arek00.clusterizer.SequenceFileUtils.SequencePrinter;
 import com.arek00.webCrawler.Entities.Articles.Article;
 import com.arek00.webCrawler.Entities.Articles.IArticle;
 import com.arek00.webCrawler.Serializers.ISerializer;
@@ -14,6 +15,8 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.mahout.clustering.canopy.CanopyDriver;
+import org.apache.mahout.clustering.fuzzykmeans.FuzzyKMeansDriver;
+import org.apache.mahout.clustering.kmeans.KMeansDriver;
 import org.apache.mahout.common.Pair;
 import org.apache.mahout.common.distance.EuclideanDistanceMeasure;
 import org.apache.mahout.common.iterator.sequencefile.SequenceFileIterable;
@@ -26,6 +29,7 @@ import org.simpleframework.xml.core.ValueRequiredException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -90,7 +94,12 @@ public class ClusteringDemo {
      */
     public void createSequenceFile() throws Exception {
         SequenceFile.Writer writer = new SequenceFile.Writer(this.fileSystem, this.configuration, new Path(SEQUENCE_PATH), Text.class, Text.class);
+
+        System.out.println("Deserialize articles");
+
         Iterator<IArticle> articles = deserializeArticles(getArticlesIterator(ARTICLES_PATH));
+
+        System.out.println("Creating sequence file");
 
         while (articles.hasNext()) {
             IArticle article = articles.next();
@@ -104,6 +113,7 @@ public class ClusteringDemo {
     }
 
     public void vectorizeDocuments() throws InterruptedException, IOException, ClassNotFoundException {
+        System.out.println("Tokenizing documents");
         DocumentProcessor.tokenizeDocuments(
                 new Path(SEQUENCE_PATH),
                 StandardAnalyzer.class,
@@ -111,6 +121,8 @@ public class ClusteringDemo {
                 this.configuration
         );
 
+
+        System.out.println("Creating TF Vectors");
 
         DictionaryVectorizer.createTermFrequencyVectors(
                 new Path(TOKENIZED_PATH),
@@ -121,6 +133,8 @@ public class ClusteringDemo {
                 PartialVectorMerger.NO_NORMALIZING,
                 true, 1, 100, false, false
         );
+
+        System.out.println("Calculate TF-IDF wages");
 
         Pair<Long[], List<Path>> documentFrequencies = TFIDFConverter.calculateDF(
                 new Path(TF_VECTOR_PATH),
@@ -145,23 +159,27 @@ public class ClusteringDemo {
         String canopyCentroids = OUTPUT_PATH + "canopy_centroids";
         String clusterOutput = OUTPUT_PATH + "clusters";
 
+        System.out.println("Run Canpopy Clustering Driver");
         CanopyDriver.run(
                 this.configuration,
                 new Path(vectorsFolder),
                 new Path(canopyCentroids),
                 new EuclideanDistanceMeasure(),
-                20, 5, true, 0, true
+                2000, 250, true, 0, true
+        );
+
+        System.out.println("Run KMeans Clustering Driver");
+
+        KMeansDriver.run(
+                new Path(vectorsFolder),
+                new Path(canopyCentroids, "clusters-0-final"),
+                new Path(clusterOutput),
+                0.01f, 20, true, 0, false
         );
     }
 
     public void printSequenceFile(Path path) {
-        SequenceFileIterable<Writable, Writable> iterable =
-                new SequenceFileIterable<Writable, Writable>(path, this.configuration);
-
-        for(Pair<Writable, Writable> pair : iterable) {
-            System.out.format("%10s -> %s\n", pair.getFirst(), pair.getSecond());
-        }
-
+        SequencePrinter.printSequence(path);
     }
 
     private Iterator<File> getArticlesIterator(String articlesDirectory) {
