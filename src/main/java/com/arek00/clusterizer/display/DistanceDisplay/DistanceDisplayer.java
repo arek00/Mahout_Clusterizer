@@ -1,7 +1,6 @@
 package com.arek00.clusterizer.display.DistanceDisplay;
 
 import com.arek00.clusterizer.SequenceFileUtils.SequencePrinter;
-import com.arek00.clusterizer.demos.ClusteringDemo;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -48,7 +47,7 @@ public class DistanceDisplayer extends Application {
 
             Arrays.stream(DistanceDisplayer.clusteredPoints).
                     forEach(each -> {
-                        addCirclesToView(controller, each);
+                        addDataToChart(controller, each);
                     });
 
             primaryStage.show();
@@ -58,13 +57,13 @@ public class DistanceDisplayer extends Application {
         }
     }
 
-    private void addCirclesToView(ViewController controller, String pointsFilePath) {
+    private void addDataToChart(ViewController controller, String pointsFilePath) {
         Path pointsSequenceFile = new Path(pointsFilePath);
 
-        controller.addCircles(
+        controller.addDataToChart(
                 SequencePrinter.getPoints(pointsSequenceFile).
                         stream().
-                        map(ClusteredPointView::new).
+                        map(point -> ClusteredPointDataConverter.getData(point)).
                         collect(Collectors.toList())
         );
 
