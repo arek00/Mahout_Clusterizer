@@ -1,6 +1,6 @@
 package com.arek00.clusterizer.demos;
 
-import com.arek00.clusterizer.ArticleUtils.ArticleRetriever;
+import com.arek00.clusterizer.ArticleUtils.ArticleExtractor;
 import com.arek00.clusterizer.SequenceFileUtils.SequencePrinter;
 import com.arek00.webCrawler.Entities.Articles.Article;
 import com.arek00.webCrawler.Entities.Articles.IArticle;
@@ -12,14 +12,11 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.Writable;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.mahout.clustering.canopy.CanopyDriver;
-import org.apache.mahout.clustering.fuzzykmeans.FuzzyKMeansDriver;
 import org.apache.mahout.clustering.kmeans.KMeansDriver;
 import org.apache.mahout.common.Pair;
 import org.apache.mahout.common.distance.EuclideanDistanceMeasure;
-import org.apache.mahout.common.iterator.sequencefile.SequenceFileIterable;
 import org.apache.mahout.vectorizer.DictionaryVectorizer;
 import org.apache.mahout.vectorizer.DocumentProcessor;
 import org.apache.mahout.vectorizer.common.PartialVectorMerger;
@@ -29,7 +26,6 @@ import org.simpleframework.xml.core.ValueRequiredException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -103,8 +99,8 @@ public class ClusteringDemo {
 
         while (articles.hasNext()) {
             IArticle article = articles.next();
-            Text title = ArticleRetriever.retrieveTitle(article);
-            Text content = ArticleRetriever.retrieveContent(article);
+            Text title = ArticleExtractor.extractTitle(article);
+            Text content = ArticleExtractor.extractContent(article);
 
             writer.append(title, content);
         }

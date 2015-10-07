@@ -12,7 +12,9 @@ import javafx.scene.layout.Pane;
 import javafx.scene.shape.Circle;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class ViewController {
@@ -47,7 +49,8 @@ public class ViewController {
 class SeriesCreator {
 
     public static List<XYChart.Series> getSeries(List<XYChart.Data> data) {
-        List<XYChart.Series> series = new ArrayList<XYChart.Series>();
+        Map<String, XYChart.Series> map = new HashMap<String, XYChart.Series>();
+
 
         data.stream().
                 forEach(dataEntity -> {
@@ -55,16 +58,20 @@ class SeriesCreator {
                     float pointY = ((Float) dataEntity.getYValue()).floatValue();
                     dataEntity.setYValue(pointY + clusterNumber);
 
-                    while (series.size() <= clusterNumber) {
+
+                    String clusterName = Integer.toString(clusterNumber);
+
+                    if(! map.containsKey(clusterName)) {
                         XYChart.Series serie = new XYChart.Series();
-                        serie.setName("Cluster " + series.size());
-                        series.add(serie);
+                        serie.setName("Cluster " + clusterName);
+
+                        map.put(clusterName, serie);
                     }
 
-                    series.get(clusterNumber).getData().add(dataEntity);
+                    map.get(clusterName).getData().add(dataEntity);
                 });
 
-        return series;
+        return new ArrayList<XYChart.Series>(map.values());
     }
 
 }

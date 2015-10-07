@@ -7,11 +7,11 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<Pane fx:id="mainPane" maxHeight="960" maxWidth="1280" minHeight="240" minWidth="320" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.arek00.clusterizer.display.DistanceDisplay.ViewController">
+<Pane fx:id="mainPane" maxHeight="960" maxWidth="1280" minHeight="240" minWidth="320" prefHeight="557.0" prefWidth="863.0" xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.arek00.clusterizer.display.DistanceDisplay.ViewController">
    <children>
       <AnchorPane fx:id="pointsPane" mouseTransparent="true" nodeOrientation="LEFT_TO_RIGHT" prefHeight="326.0" prefWidth="600.0">
          <children>
-            <ScatterChart fx:id="pointsScatteredChart" prefHeight="326.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <ScatterChart fx:id="pointsScatteredChart" prefHeight="522.0" prefWidth="863.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
               <xAxis>
                 <NumberAxis side="BOTTOM" />
               </xAxis>

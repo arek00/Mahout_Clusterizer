@@ -28,7 +28,7 @@ public class SequencePrinter {
 
         StreamSupport.stream(iterable.spliterator(), false).
                 forEach(i -> {
-                            System.out.format("Cluster nr: %s -> %s", i.getFirst(), i.getSecond());
+                            System.out.format("Cluster nr: %s -> %s\n", i.getFirst(), i.getSecond());
                         }
                 );
     }
