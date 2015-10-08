@@ -1,5 +1,9 @@
-package com.arek00.clusterizer.clusterizers;
+package com.arek00.clusterizer.Clustering.Clusterizers.KMeans;
 
+import com.arek00.clusterizer.ArticleUtils.ArticlesDeserializer;
+import com.arek00.clusterizer.Clustering.SequenceFile.SequenceFileWriter;
+import com.arek00.clusterizer.Clustering.Tokenizers.StandardTokenizer;
+import com.arek00.clusterizer.Clustering.Tokenizers.Tokenizer;
 import com.arek00.webCrawler.Entities.Articles.Article;
 import com.arek00.webCrawler.Entities.Articles.IArticle;
 import com.arek00.webCrawler.Serializers.ISerializer;
@@ -9,9 +13,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.mahout.clustering.canopy.CanopyDriver;
 import org.apache.mahout.clustering.kmeans.KMeansDriver;
 import org.apache.mahout.clustering.kmeans.RandomSeedGenerator;
@@ -72,8 +74,6 @@ public class KMeansClusterizer {
 
     private void doSetPaths(final String outputDirectory) {
         this.outputPath = new Path(outputDirectory);
-
-
         sequenceFilePath = new Path(outputPath, "sequence");
         tfidfPath = new Path(outputPath, "tfidf");
         tokenizedDocumentsDirectory = new Path(outputPath, DocumentProcessor.TOKENIZED_DOCUMENT_OUTPUT_FOLDER);
@@ -98,25 +98,23 @@ public class KMeansClusterizer {
      * @throws Exception
      */
     private void createSequenceFile(final String documentsDirectory) throws Exception {
-        SequenceFile.Writer writer = new SequenceFile.Writer(this.fileSystem, this.configuration, sequenceFilePath, Text.class, Text.class);
-        writeDocuments(deserializeArticles(getArticlesIterator(documentsDirectory)), writer);
+        SequenceFileWriter writer = new SequenceFileWriter(this.configuration);
+
+        Iterator<IArticle> articles = ArticlesDeserializer.fromDirectory(documentsDirectory);
+        writer.writeToSequenceFile(getArticlesPairs(articles), sequenceFilePath);
     }
 
-    private void writeDocuments(Iterator<IArticle> articlesIterator, SequenceFile.Writer writer) throws IOException {
+    private List<Pair<Text, Text>> getArticlesPairs(Iterator<IArticle> articlesIterator) throws IOException {
+        List<Pair<Text, Text>> pairs = new ArrayList<>();
 
-        articlesIterator.forEachRemaining(article -> {
-            Text key = new Text(article.getTitle());
-            Text value = new Text(article.getContent());
+        articlesIterator.forEachRemaining(
+                article -> {
+                    Text key = new Text(article.getTitle());
+                    Text value = new Text(article.getContent());
+                    pairs.add(new Pair<>(key, value));
+                });
 
-            try {
-                writer.append(key, value);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-        });
-
-        writer.close();
+        return pairs;
     }
 
     private void vectorizeDocuments(final KMeansParameters parameters) throws InterruptedException, IOException, ClassNotFoundException {
@@ -128,12 +126,8 @@ public class KMeansClusterizer {
     private void tokenizeDocuments() throws InterruptedException, IOException, ClassNotFoundException {
         System.out.println("Tokenizing documents");
 
-        DocumentProcessor.tokenizeDocuments(
-                sequenceFilePath,
-                StandardAnalyzer.class,
-                tokenizedDocumentsDirectory,
-                this.configuration
-        );
+        Tokenizer tokenizer = new StandardTokenizer(this.configuration);
+        tokenizer.tokenize(sequenceFilePath, tokenizedDocumentsDirectory);
     }
 
     private Pair<Long[], List<Path>> createTFVectors(int maxNGramSize) throws InterruptedException, IOException, ClassNotFoundException {
@@ -203,13 +197,13 @@ public class KMeansClusterizer {
     }
 
     private Path createCanopyCentroids(Path vectors, Path canopyCentroids, double t1, double t2) throws InterruptedException, IOException, ClassNotFoundException {
-
+        System.out.println("Run Canopy");
         CanopyDriver.run(
                 this.configuration,
                 vectors, canopyCentroids,
                 new EuclideanDistanceMeasure(),
                 t1, t2,
-                true, 0.0d, true);
+                true, 0, true);
 
         return new Path(canopyCentroids, "clusters-0-final");
     }

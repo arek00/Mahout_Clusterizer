@@ -1,4 +1,4 @@
-package com.arek00.clusterizer.clusterizers;
+package com.arek00.clusterizer.Clustering.Clusterizers.KMeans;
 
 import lombok.Getter;
 

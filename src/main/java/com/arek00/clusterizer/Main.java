@@ -1,23 +1,23 @@
 package com.arek00.clusterizer;
 
 
-import com.arek00.clusterizer.clusterizers.KMeansClusterizer;
-import com.arek00.clusterizer.clusterizers.KMeansParameters;
+import com.arek00.clusterizer.Clustering.Clusterizers.KMeans.KMeansClusterizer;
+import com.arek00.clusterizer.Clustering.Clusterizers.KMeans.KMeansParameters;
 
 public class Main {
 
     public static void main(String[] args) {
         String articles = "/home/arek/articles/articles";
-        String output = "/home/arek/clusterizer/canopyTest";
+        String output = "/home/arek/clusterizer/CanopyTest2";
 
         KMeansClusterizer kmeans = new KMeansClusterizer();
         KMeansParameters parameters =
                 new KMeansParameters.Builder()
-                        .ngramSize(KMeansParameters.Builder.BIGRAM)
+                        .ngramSize(KMeansParameters.Builder.UNIGRAM)
                         .kPointsNumber(50)
                         .iterationsNumber(20)
                         .useCanopy(true)
-                        .canopyThresholds(2000, 250)
+                        .canopyThresholds(1000, 500)
                         .build();
 
         try {

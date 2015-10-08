@@ -14,7 +14,7 @@ import java.util.List;
 
 public class ArticlesDeserializer {
 
-    public static List<IArticle> fromDirectory(String directory) {
+    public static Iterator<IArticle> fromDirectory(String directory) {
 
         List<IArticle> articles = new ArrayList<IArticle>();
 
@@ -34,6 +34,6 @@ public class ArticlesDeserializer {
             }
         });
 
-        return articles;
+        return articles.iterator();
     }
 }
