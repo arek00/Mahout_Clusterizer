@@ -4,6 +4,8 @@ import com.arek00.clusterizer.ArticleUtils.ArticlesDeserializer;
 import com.arek00.clusterizer.Clustering.SequenceFile.SequenceFileWriter;
 import com.arek00.clusterizer.Clustering.Tokenizers.StandardTokenizer;
 import com.arek00.clusterizer.Clustering.Tokenizers.Tokenizer;
+import com.arek00.clusterizer.Clustering.Vectorizers.TFIDFParameters;
+import com.arek00.clusterizer.Clustering.Vectorizers.TFIDFVectorizer;
 import com.arek00.webCrawler.Entities.Articles.Article;
 import com.arek00.webCrawler.Entities.Articles.IArticle;
 import com.arek00.webCrawler.Serializers.ISerializer;
@@ -117,12 +119,6 @@ public class KMeansClusterizer {
         return pairs;
     }
 
-    private void vectorizeDocuments(final KMeansParameters parameters) throws InterruptedException, IOException, ClassNotFoundException {
-        tokenizeDocuments();
-        Pair<Long[], List<Path>> documentFrequencies = createTFVectors(parameters.getNgramSize());
-        createTFIDFVector(documentFrequencies);
-    }
-
     private void tokenizeDocuments() throws InterruptedException, IOException, ClassNotFoundException {
         System.out.println("Tokenizing documents");
 
@@ -130,50 +126,12 @@ public class KMeansClusterizer {
         tokenizer.tokenize(sequenceFilePath, tokenizedDocumentsDirectory);
     }
 
-    private Pair<Long[], List<Path>> createTFVectors(int maxNGramSize) throws InterruptedException, IOException, ClassNotFoundException {
+    private void vectorizeDocuments(TFIDFParameters parameters) throws InterruptedException, IOException, ClassNotFoundException {
         System.out.println("Creating TF Vectors");
 
-        String dictionaryVectorizerTFVectors = DictionaryVectorizer.DOCUMENT_VECTOR_OUTPUT_FOLDER;
-        int minimumWordFrequency = 1;
-        float minimumLLRValue = 0.0f;
-        float normalizingPower = PartialVectorMerger.NO_NORMALIZING;
-        int chunkSizeInMb = 100;
-
-        DictionaryVectorizer.createTermFrequencyVectors(
-                tokenizedDocumentsDirectory,
-                outputPath,
-                dictionaryVectorizerTFVectors,
-                this.configuration,
-                minimumWordFrequency,
-                maxNGramSize,
-                minimumLLRValue,
-                normalizingPower,
-                true, 1,
-                chunkSizeInMb,
-                false, false
-        );
-
-
-        return TFIDFConverter.calculateDF(
-                tfVectorPath,
-                tfidfPath,
-                this.configuration, 100
-        );
+        TFIDFVectorizer vectorizer = new TFIDFVectorizer(this.configuration);
+        vectorizer.vectorize(tokenizedDocumentsDirectory, outputPath, parameters);
     }
-
-    private void createTFIDFVector(Pair<Long[], List<Path>> documentFrequencies) throws InterruptedException, IOException, ClassNotFoundException {
-
-        TFIDFConverter.processTfIdf(
-                tfVectorPath,
-                tfidfPath,
-                this.configuration,
-                documentFrequencies,
-                1, 100,
-                PartialVectorMerger.NO_NORMALIZING,
-                false, false, false, 1
-        );
-    }
-
 
     private void createClusters(KMeansParameters parameters) throws InterruptedException, IOException, ClassNotFoundException {
         Path vectorsFolder = new Path(tfidfPath, "tfidf-vectors");
