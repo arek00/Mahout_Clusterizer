@@ -20,12 +20,17 @@ public class StandardTokenizer implements Tokenizer {
     }
 
     @Override
-    public void tokenize(Path sequenceFile, Path tokenizeDirectory) throws InterruptedException, IOException, ClassNotFoundException {
+    public Path tokenize(Path sequenceFile, Path tokenizeDirectory) throws InterruptedException, IOException, ClassNotFoundException {
+        Path output = new Path(tokenizeDirectory, DocumentProcessor.TOKENIZED_DOCUMENT_OUTPUT_FOLDER);
+
+
         DocumentProcessor.tokenizeDocuments(
                 sequenceFile,
                 StandardAnalyzer.class,
-                new Path(tokenizeDirectory, DocumentProcessor.TOKENIZED_DOCUMENT_OUTPUT_FOLDER),
+                output,
                 this.configuration
         );
+
+        return output;
     }
 }

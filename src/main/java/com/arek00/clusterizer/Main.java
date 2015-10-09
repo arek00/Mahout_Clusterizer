@@ -3,17 +3,19 @@ package com.arek00.clusterizer;
 
 import com.arek00.clusterizer.ArticleUtils.ArticleExtractor;
 import com.arek00.clusterizer.ArticleUtils.ArticlesDeserializer;
+import com.arek00.clusterizer.Clustering.Centroids.CanopyCentroids;
 import com.arek00.clusterizer.Clustering.Clusterizers.KMeans.KMeansClusterizer;
-import com.arek00.clusterizer.Clustering.Clusterizers.KMeans.KMeansParameters;
 import com.arek00.clusterizer.Clustering.SequenceFile.SequenceFileWriter;
 import com.arek00.clusterizer.Clustering.Tokenizers.StandardTokenizer;
 import com.arek00.clusterizer.Clustering.Tokenizers.Tokenizer;
+import com.arek00.clusterizer.Clustering.Vectorizers.TFIDFParameters;
 import com.arek00.clusterizer.Clustering.Vectorizers.TFIDFVectorizer;
 import com.arek00.webCrawler.Entities.Articles.IArticle;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
 import org.apache.mahout.common.Pair;
+import org.apache.mahout.vectorizer.common.PartialVectorMerger;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,8 +33,18 @@ public class Main {
         Path sequenceFile = new Path(output, "sequenceFile");
         Path tokenizedDirectory = new Path(output, "tokenizedFiles");
         Path vectorsDirectory = new Path(output, "vectors");
+        Path centroidsDirectory = new Path(output, "centroids");
 
-        List<Pair<Text, Text>> articlesPairs = getArticlesPairs(ArticlesDeserializer.fromDirectory(articles));
+        TFIDFParameters tfidfParameters = new TFIDFParameters.Builder()
+                .chunkSizeInMb(150)
+                .maxNGramSize(1)
+                .minimumLLRValue(0.0f)
+                .minimumWordFrequency(1)
+                .normalizingPower(PartialVectorMerger.NO_NORMALIZING)
+                .build();
+
+
+        List<Pair<Text, Text>> articlesPairs = getArticlesPairs(ArticlesDeserializer.fromDirectory(articles.toString()));
 
         SequenceFileWriter writer = new SequenceFileWriter(configuration);
 
@@ -42,7 +54,12 @@ public class Main {
             tokenizer.tokenize(sequenceFile, tokenizedDirectory);
 
             TFIDFVectorizer vectorizer = new TFIDFVectorizer(configuration);
-            vectorizer.vectorize(tokenizedDirectory, vectorsDirectory, );
+            vectorizer.vectorize(tokenizedDirectory, vectorsDirectory, tfidfParameters);
+
+            CanopyCentroids centroids = new CanopyCentroids(configuration);
+            centroids.setCanopyThresholds(1000, 250);
+            centroids.generateCentroids(vectorsDirectory, centroidsDirectory);
+
 
 
         } catch (IOException e) {
@@ -64,11 +81,11 @@ public class Main {
         List<Pair<Text, Text>> articlesList = new ArrayList<>();
 
         articleIterator.forEachRemaining(article -> {
-            articlesList.add(new Pair(ArticleExtractor.extractTitle(article),
+            articlesList.add(new Pair<Text, Text>(ArticleExtractor.extractTitle(article),
                     ArticleExtractor.extractContent(article)));
         });
 
-
+        return articlesList;
     }
 
 }

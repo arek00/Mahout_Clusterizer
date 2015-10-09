@@ -44,12 +44,14 @@ public class CanopyCentroids implements CentroidsGenerator {
      * @throws Exception
      */
     @Override
-    public void generateCentroids(Path vectors, Path output) throws InterruptedException, IOException, ClassNotFoundException {
+    public Path generateCentroids(Path vectors, Path output) throws InterruptedException, IOException, ClassNotFoundException {
         CanopyDriver.run(
                 this.configuration,
                 vectors, output,
                 new EuclideanDistanceMeasure(),
                 T1, T2,
                 true, 0, true);
+    return new Path(output, "clusters-0-final");
+
     }
 }

@@ -8,5 +8,5 @@ import java.io.IOException;
  * Interface for tokenizers.
  */
 public interface Tokenizer {
-    void tokenize(Path sequenceFile, Path tokenizeDirectory) throws InterruptedException, IOException, ClassNotFoundException;
+    public Path tokenize(Path sequenceFile, Path tokenizeDirectory) throws InterruptedException, IOException, ClassNotFoundException;
 }

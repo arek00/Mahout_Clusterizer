@@ -39,8 +39,8 @@ public class RandomSeedCentroids implements CentroidsGenerator{
      * @param vectors Path of vectorized documents i.e tfidf-vectors
      * @param output
      */
-    public void generateCentroids(Path vectors, Path output) throws IOException {
-        RandomSeedGenerator.buildRandom(this.configuration, vectors, output, kPoints, new EuclideanDistanceMeasure());
+    public Path generateCentroids(Path vectors, Path output) throws IOException {
+        return RandomSeedGenerator.buildRandom(this.configuration, vectors, output, kPoints, new EuclideanDistanceMeasure());
     }
 
 }
