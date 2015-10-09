@@ -22,7 +22,7 @@ public class TFIDFVectorizer {
         this.configuration = configuration;
     }
 
-    public void vectorize(Path tokenizedDocumentsDirectory, Path output, TFIDFParameters parameters) throws InterruptedException, IOException, ClassNotFoundException {
+    public Path vectorize(Path tokenizedDocumentsDirectory, Path output, TFIDFParameters parameters) throws InterruptedException, IOException, ClassNotFoundException {
         Path tfVectorPath = new Path(output, DictionaryVectorizer.DOCUMENT_VECTOR_OUTPUT_FOLDER);
         Path tfidfPath = new Path(output, "tfidf");
 
@@ -58,6 +58,7 @@ public class TFIDFVectorizer {
                 false, false, false, 1
         );
 
+        return new Path(tfidfPath, "tfidf-vectors");
     }
 
 }

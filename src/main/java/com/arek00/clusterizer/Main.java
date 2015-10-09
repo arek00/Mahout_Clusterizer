@@ -5,6 +5,7 @@ import com.arek00.clusterizer.ArticleUtils.ArticleExtractor;
 import com.arek00.clusterizer.ArticleUtils.ArticlesDeserializer;
 import com.arek00.clusterizer.Clustering.Centroids.CanopyCentroids;
 import com.arek00.clusterizer.Clustering.Clusterizers.KMeans.KMeansClusterizer;
+import com.arek00.clusterizer.Clustering.Clusterizers.KMeans.KMeansParameters;
 import com.arek00.clusterizer.Clustering.SequenceFile.SequenceFileWriter;
 import com.arek00.clusterizer.Clustering.Tokenizers.StandardTokenizer;
 import com.arek00.clusterizer.Clustering.Tokenizers.Tokenizer;
@@ -34,6 +35,7 @@ public class Main {
         Path tokenizedDirectory = new Path(output, "tokenizedFiles");
         Path vectorsDirectory = new Path(output, "vectors");
         Path centroidsDirectory = new Path(output, "centroids");
+        Path kmeansDirectory = new Path(output, "kmeans");
 
         TFIDFParameters tfidfParameters = new TFIDFParameters.Builder()
                 .chunkSizeInMb(150)
@@ -41,6 +43,11 @@ public class Main {
                 .minimumLLRValue(0.0f)
                 .minimumWordFrequency(1)
                 .normalizingPower(PartialVectorMerger.NO_NORMALIZING)
+                .build();
+
+        KMeansParameters kMeansParameters = new KMeansParameters.Builder()
+                .convergenceDelta(0f)
+                .maxIteration(20)
                 .build();
 
 
@@ -51,16 +58,16 @@ public class Main {
         try {
             writer.writeToSequenceFile(articlesPairs, sequenceFile);
             Tokenizer tokenizer = new StandardTokenizer(configuration);
-            tokenizer.tokenize(sequenceFile, tokenizedDirectory);
+            Path vectorizerInput = tokenizer.tokenize(sequenceFile, tokenizedDirectory);
 
             TFIDFVectorizer vectorizer = new TFIDFVectorizer(configuration);
-            vectorizer.vectorize(tokenizedDirectory, vectorsDirectory, tfidfParameters);
+            Path generatedVectors = vectorizer.vectorize(vectorizerInput, vectorsDirectory, tfidfParameters);
 
             CanopyCentroids centroids = new CanopyCentroids(configuration);
-            centroids.setCanopyThresholds(1000, 250);
-            centroids.generateCentroids(vectorsDirectory, centroidsDirectory);
-
-
+            centroids.setCanopyThresholds(500, 150);
+            Path generatedCentroids = centroids.generateCentroids(generatedVectors, centroidsDirectory);
+            KMeansClusterizer kmeans = new KMeansClusterizer();
+            kmeans.runClustering(generatedVectors, generatedCentroids, kmeansDirectory, kMeansParameters);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -71,7 +78,6 @@ public class Main {
         }
 
 
-        KMeansClusterizer kmeans = new KMeansClusterizer();
 
 
     }

@@ -20,11 +20,11 @@ public class KMeansClusterizer {
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    private void runClustering(Path output, KMeansParameters parameters) throws InterruptedException, IOException, ClassNotFoundException {
+    public void runClustering(Path vectors, Path centroids, Path output, KMeansParameters parameters) throws InterruptedException, IOException, ClassNotFoundException {
 
         KMeansDriver.run(
-                parameters.getVectors(),
-                parameters.getCentroids(),
+                vectors,
+                centroids,
                 output,
                 parameters.getConvergenceDelta(),
                 parameters.getMaxIterations(),

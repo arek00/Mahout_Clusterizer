@@ -8,35 +8,19 @@ import org.apache.hadoop.fs.Path;
  */
 public class KMeansParameters {
 
-    @Getter private Path vectors;
-    @Getter private Path centroids;
     @Getter private float convergenceDelta;
     @Getter private int maxIterations;
 
 
-    private KMeansParameters(String vectors, String centroids, float convergenceDelta, int iterations) {
-        this.vectors = new Path(vectors);
-        this.centroids = new Path(centroids);
+    private KMeansParameters(float convergenceDelta, int iterations) {
         this.convergenceDelta = convergenceDelta;
         this.maxIterations = iterations;
     }
 
     public static class Builder {
 
-        private String vectors;
-        private String centroids;
         private float convergenceDelta;
         private int maxIterations;
-
-        public Builder vectorsDirectory(String vectorsDirectory) {
-            this.vectors = vectorsDirectory;
-            return this;
-        }
-
-        public Builder centroidsDirectory(String centroidsDirectory) {
-            this.centroids = centroidsDirectory;
-            return this;
-        }
 
         public Builder maxIteration(int iterations) {
             assert iterations > 0;
@@ -53,7 +37,7 @@ public class KMeansParameters {
         }
 
         public KMeansParameters build() {
-            return new KMeansParameters(vectors, centroids, convergenceDelta, maxIterations);
+            return new KMeansParameters(convergenceDelta, maxIterations);
         }
     }
 
