@@ -81,16 +81,16 @@ public class KMeansClusteringDemo {
                         this.sequenceFile, Text.class, Text.class);
 
 
-        List<IArticle> articles = ArticlesDeserializer.fromDirectory(documentsPath.toString());
+        //List<IArticle> articles = ArticlesDeserializer.fromDirectory(documentsPath.toString());
 
-        articles.stream().
-                forEach(article -> {
-                    try {
-                        writer.append(ArticleExtractor.extractTitle(article), ArticleExtractor.extractContent(article));
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                });
+//        articles.stream().
+//                forEach(article -> {
+//                    try {
+//                        writer.append(ArticleExtractor.extractTitle(article), ArticleExtractor.extractContent(article));
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                });
     }
 
 
