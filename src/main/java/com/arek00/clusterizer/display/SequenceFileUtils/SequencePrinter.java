@@ -1,18 +1,13 @@
-package com.arek00.clusterizer.SequenceFileUtils;
+package com.arek00.clusterizer.display.SequenceFileUtils;
 
 
 import com.arek00.clusterizer.demos.ClusteredPoint;
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Writable;
-import org.apache.mahout.common.Pair;
 import org.apache.mahout.common.iterator.sequencefile.SequenceFileIterable;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;

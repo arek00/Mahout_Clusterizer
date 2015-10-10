@@ -1,6 +1,6 @@
 package com.arek00.clusterizer.display.DistanceDisplay;
 
-import com.arek00.clusterizer.SequenceFileUtils.SequencePrinter;
+import com.arek00.clusterizer.display.SequenceFileUtils.SequencePrinter;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;

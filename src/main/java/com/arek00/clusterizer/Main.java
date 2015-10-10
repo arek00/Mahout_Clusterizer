@@ -47,7 +47,7 @@ public class Main {
 
         KMeansParameters kMeansParameters = new KMeansParameters.Builder()
                 .convergenceDelta(0f)
-                .maxIteration(20)
+                .maxIteration(50)
                 .build();
 
 
@@ -64,7 +64,7 @@ public class Main {
             Path generatedVectors = vectorizer.vectorize(vectorizerInput, vectorsDirectory, tfidfParameters);
 
             CanopyCentroids centroids = new CanopyCentroids(configuration);
-            centroids.setCanopyThresholds(500, 150);
+            centroids.setCanopyThresholds(1000, 200);
             Path generatedCentroids = centroids.generateCentroids(generatedVectors, centroidsDirectory);
             KMeansClusterizer kmeans = new KMeansClusterizer();
             kmeans.runClustering(generatedVectors, generatedCentroids, kmeansDirectory, kMeansParameters);

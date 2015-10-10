@@ -1,7 +1,7 @@
 package com.arek00.clusterizer.demos;
 
 import com.arek00.clusterizer.ArticleUtils.ArticleExtractor;
-import com.arek00.clusterizer.SequenceFileUtils.SequencePrinter;
+import com.arek00.clusterizer.display.SequenceFileUtils.SequencePrinter;
 import com.arek00.webCrawler.Entities.Articles.Article;
 import com.arek00.webCrawler.Entities.Articles.IArticle;
 import com.arek00.webCrawler.Serializers.ISerializer;
