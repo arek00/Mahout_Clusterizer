@@ -1,5 +1,6 @@
 package com.arek00.clusterizer.Clustering.Vectorizers;
 
+import com.arek00.clusterizer.validators.NumberValidator;
 import lombok.Getter;
 import org.apache.mahout.vectorizer.common.PartialVectorMerger;
 
@@ -26,40 +27,76 @@ public class TFIDFParameters {
     public static class Builder {
         int minimumWordFrequency = 1;
         int maxNGramSize = 1;
-        float minimumLLRValue = 0.0f;
+        float minimumLLRValue = 0.1f;
         float normalizingPower = PartialVectorMerger.NO_NORMALIZING;
         int chunkSizeInMb = 100;
 
+        /**
+         * Set minimum word's appearance frequency in documents to keep it in dictionary
+         *
+         * @param minimumWordFrequency - Value greater than 0
+         * @return
+         */
         public Builder minimumWordFrequency(int minimumWordFrequency) {
-            assert minimumWordFrequency > 1;
+            NumberValidator.greaterThan("Minimum word frequency must be greater than zero.", 0, minimumWordFrequency);
 
             this.minimumWordFrequency = minimumWordFrequency;
             return this;
         }
 
+        /**
+         * Set maximum length of words sequence keep in dictionary.
+         * When set 1, dictionary will have only individual words, otherwise
+         * there will be keeping sentences up to three words in row.
+         *
+         * @param maxNGramSize
+         * @return
+         */
         public Builder maxNGramSize(int maxNGramSize) {
-            assert maxNGramSize > 0 && maxNGramSize < 4;
+            NumberValidator.inRange("N gram has to be in range [1;3]", 1, 3, maxNGramSize);
+
 
             this.maxNGramSize = maxNGramSize;
             return this;
         }
 
+        /**
+         * Minimum threshold to prune ngrams
+         *
+         * @param minimumLLRValue
+         * @return
+         */
         public Builder minimumLLRValue(float minimumLLRValue) {
-            assert minimumLLRValue > 0f;
+            NumberValidator.greaterThan("Minimum LLR Value has to be greater than 0", 0, minimumLLRValue);
 
             this.minimumLLRValue = minimumLLRValue;
             return this;
         }
 
+        /**
+         * Power coefficient of normalizing.
+         * Default value is PartialVectorMerger.NO_NORMALIZING = -1.
+         * Left default if it is not necessarily to change.
+         *
+         * @param normalizingPower
+         * @return
+         */
         public Builder normalizingPower(float normalizingPower) {
+
             this.normalizingPower = normalizingPower;
             return this;
         }
 
+        /**
+         * Size of chunk of data used during processing.
+         *
+         * @param chunkSize
+         * @return
+         */
         public Builder chunkSizeInMb(int chunkSize) {
-            assert chunkSize > 100;
-            this.chunkSizeInMb = chunkSize;
+            NumberValidator.greaterOrEqual("Set chunk size minumum 100MB.", 100, chunkSize);
 
+            this.chunkSizeInMb = chunkSize;
             return this;
         }
 

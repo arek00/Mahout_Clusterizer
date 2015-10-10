@@ -19,6 +19,16 @@ public class StandardTokenizer implements Tokenizer {
         this.configuration = configuration;
     }
 
+    /**
+     * Tokenize documents with using StandardAnalyzer words analyzer.
+     *
+     * @param sequenceFile      - SequenceFile contains sequence of documents
+     * @param tokenizeDirectory - directory to tokenizer job
+     * @return - Output directory of tokenizer, ready to use by vectorizer
+     * @throws InterruptedException
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
     @Override
     public Path tokenize(Path sequenceFile, Path tokenizeDirectory) throws InterruptedException, IOException, ClassNotFoundException {
         Path output = new Path(tokenizeDirectory, DocumentProcessor.TOKENIZED_DOCUMENT_OUTPUT_FOLDER);
