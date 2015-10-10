@@ -19,8 +19,18 @@ public class FuzzyKMeansClusterizer {
         this.configuration = configuration;
     }
 
-
-    public void runClustering(Path vectors, Path centroids, Path output, FuzzyKMeansParameters parameters) throws InterruptedException, IOException, ClassNotFoundException {
+    /**
+     * Run fuzzyKMeans algorithm job.
+     *
+     * @param vectors - vectors to clusterize
+     * @param centroids - initial clusters' centroids points
+     * @param output - directory to store results, should be clear before running clustering
+     * @param parameters - instance of FuzzyKMeansParameters
+     * @throws InterruptedException
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
+    public void runClustering(@NonNull Path vectors, @NonNull Path centroids, @NonNull Path output, @NonNull FuzzyKMeansParameters parameters) throws InterruptedException, IOException, ClassNotFoundException {
         FuzzyKMeansDriver.run(
                 this.configuration,
                 vectors,
