@@ -1,6 +1,7 @@
 package com.arek00.clusterizer.Clustering.Clusterizers.FuzzyMeans;
 
 import com.arek00.clusterizer.validators.NumberValidator;
+import lombok.Getter;
 
 /**
  * Parameters mandatory to run FuzzyKMeans Clustering algorithm.
@@ -8,15 +9,22 @@ import com.arek00.clusterizer.validators.NumberValidator;
  */
 public class FuzzyKMeansParameters {
 
-    private double convergenceDelta = 0.0f;
-    private float m = 1.0f;
-    private int maxIterations = 1;
-    private boolean emittedMostLikely = true;
+    @Getter private double convergenceDelta = 0.0f;
+    @Getter private float m = 1.0f;
+    @Getter private int maxIterations = 1;
+    @Getter private boolean emittedMostLikely = true;
 
+
+    private FuzzyKMeansParameters(double convergenceDelta, float m, int maxIterations, boolean emittedMostLikely) {
+        this.convergenceDelta = convergenceDelta;
+        this.m = m;
+        this.maxIterations = maxIterations;
+        this.emittedMostLikely = emittedMostLikely;
+    }
 
     public static class Builder {
         private double convergenceDelta = 0.0f;
-        private double m = 1.0f;
+        private float m = 1.0f;
         private int maxIterations = 1;
         private boolean emittedMostLikely = true;
 
@@ -45,8 +53,9 @@ public class FuzzyKMeansParameters {
          * @param m
          * @return
          */
-        public Builder fuzzyness(double m) {
-            NumberValidator.greaterThan("Fuzzyness m parameter has to be greater than 1", 1.0d, m);
+        public Builder fuzzyness(float m) {
+            NumberValidator.greaterThan("Fuzzyness value has to be greater than 1", 1, m);
+            NumberValidator.lesserOrEqual("Fuzzyness value has to be lesser or equal 2.", 2, m);
 
             this.m = m;
             return this;
@@ -79,7 +88,13 @@ public class FuzzyKMeansParameters {
             return this;
         }
 
-
+        /**
+         * Get instance with parameters set before.
+         * @return
+         */
+        public FuzzyKMeansParameters build() {
+            return new FuzzyKMeansParameters(convergenceDelta, m, maxIterations, emittedMostLikely);
+        }
     }
 
 }

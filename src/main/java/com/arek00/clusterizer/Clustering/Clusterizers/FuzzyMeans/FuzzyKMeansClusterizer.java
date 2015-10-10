@@ -6,6 +6,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.mahout.clustering.fuzzykmeans.FuzzyKMeansDriver;
 import org.apache.mahout.clustering.spectral.kmeans.SpectralKMeansDriver;
 
+import java.io.IOException;
+
 /**
  * Run FuzzyKMeans Clustering.
  */
@@ -18,14 +20,19 @@ public class FuzzyKMeansClusterizer {
     }
 
 
-    public void runClustering(Path vectors, Path centroids, Path output) {
+    public void runClustering(Path vectors, Path centroids, Path output, FuzzyKMeansParameters parameters) throws InterruptedException, IOException, ClassNotFoundException {
         FuzzyKMeansDriver.run(
                 this.configuration,
                 vectors,
                 centroids,
                 output,
-
-                )
+                parameters.getConvergenceDelta(),
+                parameters.getMaxIterations(),
+                parameters.getM(),
+                true,
+                parameters.isEmittedMostLikely(),
+                0, false
+        );
     }
 
 }

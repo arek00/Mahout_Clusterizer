@@ -51,9 +51,25 @@ public class NumberValidator {
         }
     }
 
+    public static void outRange(String errorMessage, int min, int max, int... arguments) {
+        for (int argument : arguments) {
+            if(argument >= min && argument <= max) {
+                throw new IllegalArgumentException(errorMessage);
+            }
+        }
+    }
+
+    public static void outRange(String errorMessage, double min, double max, double... arguments) {
+        for (double argument : arguments) {
+            if(argument >= min && argument <= max) {
+                throw new IllegalArgumentException(errorMessage);
+            }
+        }
+    }
+
     public static void lesserThan(String errorMessage, int statement, int... arguments) {
         for (int argument : arguments) {
-            if(argument > statement) {
+            if(argument >= statement) {
                 throw new IllegalArgumentException(errorMessage);
             }
         }
@@ -61,7 +77,7 @@ public class NumberValidator {
 
     public static void lesserThan(String errorMessage, double statement, double... arguments) {
         for (double argument : arguments) {
-            if(argument > statement) {
+            if(argument >= statement) {
                 throw new IllegalArgumentException(errorMessage);
             }
         }
@@ -69,7 +85,7 @@ public class NumberValidator {
 
     public static void greaterThan(String errorMessage, int statement, int... arguments) {
         for (int argument : arguments) {
-            if(argument > statement) {
+            if(argument <= statement) {
                 throw new IllegalArgumentException(errorMessage);
             }
         }
@@ -77,7 +93,7 @@ public class NumberValidator {
 
     public static void greaterThan(String errorMessage, double statement, double... arguments) {
         for (double argument : arguments) {
-            if(argument > statement) {
+            if(argument <= statement) {
                 throw new IllegalArgumentException(errorMessage);
             }
         }
@@ -99,5 +115,35 @@ public class NumberValidator {
         }
     }
 
+    public static void lesserOrEqual(String errorMessage, int statement, int... arguments) {
+        for (int argument : arguments) {
+            if(argument > statement) {
+                throw new IllegalArgumentException(errorMessage);
+            }
+        }
+    }
 
+    public static void lesserOrEqual(String errorMessage, double statement, double... arguments) {
+        for (double argument : arguments) {
+            if(argument > statement) {
+                throw new IllegalArgumentException(errorMessage);
+            }
+        }
+    }
+
+    public static void greaterOrEqual(String errorMessage, int statement, int... arguments) {
+        for (int argument : arguments) {
+            if(argument < statement) {
+                throw new IllegalArgumentException(errorMessage);
+            }
+        }
+    }
+
+    public static void greaterOrEqual(String errorMessage, double statement, double... arguments) {
+        for (double argument : arguments) {
+            if(argument < statement) {
+                throw new IllegalArgumentException(errorMessage);
+            }
+        }
+    }
 }
