@@ -5,6 +5,7 @@ import lombok.NonNull;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.mahout.clustering.canopy.CanopyDriver;
+import org.apache.mahout.clustering.lda.LDAPrintTopics;
 import org.apache.mahout.common.distance.EuclideanDistanceMeasure;
 
 import java.io.IOException;

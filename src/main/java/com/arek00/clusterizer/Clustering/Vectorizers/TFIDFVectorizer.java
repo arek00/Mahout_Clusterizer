@@ -1,11 +1,11 @@
 package com.arek00.clusterizer.Clustering.Vectorizers;
 
+import com.arek00.clusterizer.validators.NumberValidator;
 import lombok.NonNull;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.mahout.common.Pair;
 import org.apache.mahout.vectorizer.DictionaryVectorizer;
-import org.apache.mahout.vectorizer.common.PartialVectorMerger;
 import org.apache.mahout.vectorizer.tfidf.TFIDFConverter;
 
 import java.io.IOException;
@@ -22,34 +22,33 @@ public class TFIDFVectorizer {
         this.configuration = configuration;
     }
 
-    public Path vectorize(Path tokenizedDocumentsDirectory, Path output, TFIDFParameters parameters) throws InterruptedException, IOException, ClassNotFoundException {
-        Path tfVectorPath = new Path(output, DictionaryVectorizer.DOCUMENT_VECTOR_OUTPUT_FOLDER);
+    /**
+     * Create Term Frequency - Inversed Document Frequency vectors from
+     * Term Frequency vectors.
+     *
+     * @param tfVectors - Term Frequency vectors directory
+     * @param output - Directory to save created TFIDF vectors
+     * @param parameters
+     * @param chunkSizeInMB - Size of chunk of data used to processing. Minimum 1MB, preferred over 100MB
+     * @return
+     * @throws InterruptedException
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
+    public Path vectorize(Path tfVectors, Path output, TFIDFParameters parameters, int chunkSizeInMB) throws InterruptedException, IOException, ClassNotFoundException {
+        NumberValidator.greaterThan("Chunk Size has to be greater than 0", 0, chunkSizeInMB);
+
         Path tfidfPath = new Path(output, "tfidf");
 
-
-        DictionaryVectorizer.createTermFrequencyVectors(
-                tokenizedDocumentsDirectory,
-                output,
-                DictionaryVectorizer.DOCUMENT_VECTOR_OUTPUT_FOLDER,
-                this.configuration,
-                parameters.getMinimumWordFrequency(),
-                parameters.getMaxNGramSize(),
-                parameters.getMinimumLLRValue(),
-                parameters.getNormalizingPower(),
-                true, 1,
-                parameters.getChunkSizeInMb(),
-                false, false
-        );
-
         Pair<Long[], List<Path>> documentFrequencies = TFIDFConverter.calculateDF(
-                new Path(output, tfVectorPath),
+                tfVectors,
                 tfidfPath,
                 this.configuration,
-                parameters.getChunkSizeInMb()
+                chunkSizeInMB
         );
 
         TFIDFConverter.processTfIdf(
-                tfVectorPath,
+                tfVectors,
                 tfidfPath,
                 this.configuration,
                 documentFrequencies,

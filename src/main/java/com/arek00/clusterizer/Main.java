@@ -9,7 +9,7 @@ import com.arek00.clusterizer.Clustering.Clusterizers.KMeans.KMeansParameters;
 import com.arek00.clusterizer.Clustering.SequenceFile.SequenceFileWriter;
 import com.arek00.clusterizer.Clustering.Tokenizers.StandardTokenizer;
 import com.arek00.clusterizer.Clustering.Tokenizers.Tokenizer;
-import com.arek00.clusterizer.Clustering.Vectorizers.TFIDFParameters;
+import com.arek00.clusterizer.Clustering.Vectorizers.TFParameters;
 import com.arek00.clusterizer.Clustering.Vectorizers.TFIDFVectorizer;
 import com.arek00.webCrawler.Entities.Articles.IArticle;
 import org.apache.hadoop.conf.Configuration;
@@ -37,7 +37,7 @@ public class Main {
         Path centroidsDirectory = new Path(output, "centroids");
         Path kmeansDirectory = new Path(output, "kmeans");
 
-        TFIDFParameters tfidfParameters = new TFIDFParameters.Builder()
+        TFParameters tfidfParameters = new TFParameters.Builder()
                 .chunkSizeInMb(150)
                 .maxNGramSize(1)
                 .minimumLLRValue(0.0f)
