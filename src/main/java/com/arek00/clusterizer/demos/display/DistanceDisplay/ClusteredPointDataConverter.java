@@ -1,4 +1,4 @@
-package com.arek00.clusterizer.display.DistanceDisplay;
+package com.arek00.clusterizer.demos.display.DistanceDisplay;
 
 import com.arek00.clusterizer.demos.ClusteredPoint;
 import javafx.scene.chart.XYChart;

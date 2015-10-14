@@ -1,4 +1,4 @@
-package com.arek00.clusterizer.display.DistanceDisplay;
+package com.arek00.clusterizer.demos.display.DistanceDisplay;
 
 
 import javafx.scene.paint.Color;

@@ -1,4 +1,4 @@
-package com.arek00.clusterizer.display.DistanceDisplay;
+package com.arek00.clusterizer.demos.display.DistanceDisplay;
 
 import com.arek00.clusterizer.demos.ClusteredPoint;
 import javafx.scene.paint.Paint;
@@ -6,7 +6,6 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Shape;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 
 
 public class ClusteredPointView {

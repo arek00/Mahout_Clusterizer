@@ -1,15 +1,13 @@
-package com.arek00.clusterizer.display.DistanceDisplay;
+package com.arek00.clusterizer.demos.display.DistanceDisplay;
 
 import javafx.event.Event;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.chart.BubbleChart;
 import javafx.scene.chart.ScatterChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
-import javafx.scene.shape.Circle;
 
 import java.util.ArrayList;
 import java.util.HashMap;

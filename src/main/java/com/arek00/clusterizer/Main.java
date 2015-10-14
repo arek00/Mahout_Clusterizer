@@ -9,8 +9,10 @@ import com.arek00.clusterizer.Clustering.Clusterizers.KMeans.KMeansParameters;
 import com.arek00.clusterizer.Clustering.SequenceFile.SequenceFileWriter;
 import com.arek00.clusterizer.Clustering.Tokenizers.StandardTokenizer;
 import com.arek00.clusterizer.Clustering.Tokenizers.Tokenizer;
+import com.arek00.clusterizer.Clustering.Vectorizers.TFIDFParameters;
 import com.arek00.clusterizer.Clustering.Vectorizers.TFParameters;
 import com.arek00.clusterizer.Clustering.Vectorizers.TFIDFVectorizer;
+import com.arek00.clusterizer.Clustering.Vectorizers.TFVectorizer;
 import com.arek00.webCrawler.Entities.Articles.IArticle;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -33,23 +35,25 @@ public class Main {
         Path output = new Path("/home/arek/clusterizer/CanopyTest2");
         Path sequenceFile = new Path(output, "sequenceFile");
         Path tokenizedDirectory = new Path(output, "tokenizedFiles");
-        Path vectorsDirectory = new Path(output, "vectors");
+        Path tfVectorsDirectory = new Path(output, "tfVectors");
+        Path tfidfVectorsDirectory = new Path(output, "tfidfVectors");
         Path centroidsDirectory = new Path(output, "centroids");
         Path kmeansDirectory = new Path(output, "kmeans");
 
-        TFParameters tfidfParameters = new TFParameters.Builder()
-                .chunkSizeInMb(150)
+        TFParameters tfParameters = new TFParameters.Builder()
                 .maxNGramSize(1)
-                .minimumLLRValue(0.0f)
+                .minimumLLRValue(0.1f)
                 .minimumWordFrequency(1)
                 .normalizingPower(PartialVectorMerger.NO_NORMALIZING)
+                .build();
+
+        TFIDFParameters tfidfParameters = new TFIDFParameters.Builder()
                 .build();
 
         KMeansParameters kMeansParameters = new KMeansParameters.Builder()
                 .convergenceDelta(0f)
                 .maxIteration(50)
                 .build();
-
 
         List<Pair<Text, Text>> articlesPairs = getArticlesPairs(ArticlesDeserializer.fromDirectory(articles.toString()));
 
@@ -58,16 +62,19 @@ public class Main {
         try {
             writer.writeToSequenceFile(articlesPairs, sequenceFile);
             Tokenizer tokenizer = new StandardTokenizer(configuration);
-            Path vectorizerInput = tokenizer.tokenize(sequenceFile, tokenizedDirectory);
+            Path tokenizedDocuments = tokenizer.tokenize(sequenceFile, tokenizedDirectory);
+
+            TFVectorizer tfVectorizer = new TFVectorizer(configuration);
+            Path tfVectors = tfVectorizer.createVectors(tokenizedDocuments, tfVectorsDirectory, tfParameters, 100);
 
             TFIDFVectorizer vectorizer = new TFIDFVectorizer(configuration);
-            Path generatedVectors = vectorizer.vectorize(vectorizerInput, vectorsDirectory, tfidfParameters);
+            Path tfidfVectors = vectorizer.vectorize(tfVectors, tfidfVectorsDirectory, tfidfParameters, 100);
 
             CanopyCentroids centroids = new CanopyCentroids(configuration);
             centroids.setCanopyThresholds(1000, 200);
-            Path generatedCentroids = centroids.generateCentroids(generatedVectors, centroidsDirectory);
-            KMeansClusterizer kmeans = new KMeansClusterizer();
-            kmeans.runClustering(generatedVectors, generatedCentroids, kmeansDirectory, kMeansParameters);
+            Path generatedCentroids = centroids.generateCentroids(tfidfVectors, centroidsDirectory);
+            KMeansClusterizer kmeans = new KMeansClusterizer(configuration);
+            kmeans.runClustering(tfidfVectors, generatedCentroids, kmeansDirectory, kMeansParameters);
 
         } catch (IOException e) {
             e.printStackTrace();
