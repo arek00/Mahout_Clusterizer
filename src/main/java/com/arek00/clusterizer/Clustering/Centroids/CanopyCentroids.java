@@ -29,7 +29,7 @@ public class CanopyCentroids implements CentroidsGenerator {
      * @param T2
      */
     public void setCanopyThresholds(double T1, double T2) {
-        NumberValidator.greaterThan("T1 has to be greater than T2", T1, T2);
+        NumberValidator.greaterThan("T1 has to be greater than T2", T2, T1);
 
         this.T1 = T1;
         this.T2 = T2;

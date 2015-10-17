@@ -10,8 +10,11 @@ import org.apache.mahout.clustering.Cluster;
 import org.apache.mahout.clustering.classify.WeightedPropertyVectorWritable;
 import org.apache.mahout.clustering.iterator.ClusterWritable;
 import org.apache.mahout.common.Pair;
+import org.apache.mahout.common.distance.EuclideanDistanceMeasure;
 import org.apache.mahout.common.iterator.sequencefile.SequenceFileIterable;
+import org.apache.mahout.math.ConstantVector;
 import org.apache.mahout.math.NamedVector;
+import org.apache.mahout.math.Vector;
 
 import java.io.DataInput;
 import java.io.DataInputStream;
@@ -27,30 +30,68 @@ public class SequencePrinter {
 
     private static Configuration configuration = new Configuration();
 
+
     public static void printSequence(Path sequenceFilePath) {
 
         SequenceFileIterable<Writable, Writable> iterable =
                 new SequenceFileIterable<Writable, Writable>(sequenceFilePath, SequencePrinter.configuration);
 
         StreamSupport.stream(iterable.spliterator(), false).
-                forEach(i -> {
-//
-//                            ClusterWritable clusterWritable = (ClusterWritable) i.getSecond();
-//                            Cluster cluster = clusterWritable.getValue();
-//
-//                            System.out.format("Cluster vector ID: %s Center: %s \n", cluster.getId(), cluster.getCenter());
-//
+                forEach(pair -> {
 
-                            WeightedPropertyVectorWritable vectorWritable = (WeightedPropertyVectorWritable) i.getSecond();
-                            String vectorClassName = vectorWritable.getVector().getClass().toString();
-                            NamedVector vector = (NamedVector) vectorWritable.getVector();
+                            if (pair.getSecond() instanceof ClusterWritable) {
+                                System.out.format("Cluster number: %s: ", pair.getFirst());
+                                printCluster((ClusterWritable) pair.getSecond());
+                            } else if (pair.getSecond() instanceof WeightedPropertyVectorWritable) {
+                                System.out.format("Cluster number %s: ", pair.getFirst());
+                                printPoint((WeightedPropertyVectorWritable) pair.getSecond());
+                            }
 
-                            System.out.format("Vector name: %s\n", vector.getName());
-//
-//                            System.out.format("Cluster nr: %s -> %s\n", i.getFirst().getClass().toString(), i.getSecond().getClass().toString());
-//                            System.out.format("Cluster nr: %s -> %s\n", i.getFirst(), i.getSecond());
+                            System.out.print("\n");
                         }
                 );
+    }
+
+
+    private static void printPoint(WeightedPropertyVectorWritable point) {
+        double distanceFromZero = calculateDistanceFromZeroPoint(point.getVector());
+        Map<Text, Text> propertiesMap = point.getProperties();
+
+        StringBuilder properties = new StringBuilder();
+
+        propertiesMap.keySet().stream()
+                .forEach(key -> {
+                    properties
+                            .append("Key: ")
+                            .append(key.toString())
+                            .append(" Value: ")
+                            .append(propertiesMap.get(key));
+
+                });
+
+        System.out.format("Point's properties: Weight: %s, Distance from 0: %s, Other properties: %s", point.getWeight(), distanceFromZero, properties);
+
+        if(point.getVector() instanceof NamedVector) {
+            String pointName = ((NamedVector) point.getVector()).getName();
+
+            System.out.format(" Point's Name: %s", pointName);
+        }
+    }
+
+    private static double calculateDistanceFromZeroPoint(Vector vector) {
+        Vector zeroVector = new ConstantVector(0d, vector.size());
+        EuclideanDistanceMeasure measurement = new EuclideanDistanceMeasure();
+        return measurement.distance(zeroVector, vector);
+    }
+
+    private static void printCluster(ClusterWritable clusterWritable) {
+        Cluster cluster = clusterWritable.getValue();
+        double distanceFromZero = calculateDistanceFromZeroPoint(cluster.getCenter());
+
+
+        System.out.format("Cluster's properties: Cluster ID: %s, Cluster's distance from 0: %s, Is Converged: %s, " +
+                        "\nCluster radius: %s",
+                cluster.getId(), distanceFromZero, cluster.isConverged(), cluster.getRadius().toString());
     }
 
     public static List<ClusteredPoint> getPoints(Path sequenceFilePath) {
