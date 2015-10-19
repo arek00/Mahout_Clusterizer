@@ -7,6 +7,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 import org.apache.mahout.common.Pair;
 
 import java.io.IOException;
@@ -35,8 +36,8 @@ public class SequenceFileWriter {
      * @param sequenceFile
      * @throws IOException Throws when couldn't write to given path.
      */
-    public void writeToSequenceFile(List<Pair<Text, Text>> pairs, Path sequenceFile) throws IOException {
-        writer = new SequenceFile.Writer(fileSystem, configuration, sequenceFile, Text.class, Text.class);
+    public void writeToSequenceFile(List<Pair<Writable, Writable>> pairs, Path sequenceFile) throws IOException {
+        writer = new SequenceFile.Writer(fileSystem, configuration, sequenceFile, Writable.class, Writable.class);
 
         pairs.stream()
                 .forEach(pair -> {

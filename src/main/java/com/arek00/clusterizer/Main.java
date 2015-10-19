@@ -3,10 +3,10 @@ package com.arek00.clusterizer;
 
 import com.arek00.clusterizer.ArticleUtils.ArticleExtractor;
 import com.arek00.clusterizer.ArticleUtils.ArticlesDeserializer;
-import com.arek00.clusterizer.Clustering.Centroids.CanopyCentroids;
 import com.arek00.clusterizer.Clustering.Clusterizers.KMeans.KMeansClusterizer;
 import com.arek00.clusterizer.Clustering.Clusterizers.KMeans.KMeansParameters;
 import com.arek00.clusterizer.Clustering.Clusterizers.StreamingKMeans.StreamingKMeansClusterizer;
+import com.arek00.clusterizer.Clustering.Clusterizers.StreamingKMeans.StreamingKMeansParameters;
 import com.arek00.clusterizer.Clustering.SequenceFile.SequenceFileWriter;
 import com.arek00.clusterizer.Clustering.Tokenizers.StandardTokenizer;
 import com.arek00.clusterizer.Clustering.Tokenizers.Tokenizer;
@@ -18,9 +18,10 @@ import com.arek00.webCrawler.Entities.Articles.IArticle;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.FileAlreadyExistsException;
 import org.apache.mahout.common.Pair;
+import org.apache.mahout.common.distance.EuclideanDistanceMeasure;
 import org.apache.mahout.vectorizer.common.PartialVectorMerger;
 
 import java.io.File;
@@ -37,13 +38,14 @@ public class Main {
         Configuration configuration = new Configuration();
 
         Path articles = new Path("/home/arek/articles/yahooArticles");
-        Path output = new Path("/home/arek/clusterizer/yahooArticlesTest");
+        Path output = new Path("/home/arek/clusterizer/streamingKMeansTest");
         Path sequenceFile = new Path(output, "sequenceFile");
         Path tokenizedDirectory = new Path(output, "tokenizedFiles");
         Path tfVectorsDirectory = new Path(output, "tfVectors");
         Path tfidfVectorsDirectory = new Path(output, "tfidfVectors");
         Path centroidsDirectory = new Path(output, "centroids");
         Path kmeansDirectory = new Path(output, "kmeans");
+        Path streamingKMeansDirectory = new Path(output, "streamingKMeans");
 
         TFParameters tfParameters = new TFParameters.Builder()
                 .maxNGramSize(1)
@@ -60,7 +62,15 @@ public class Main {
                 .maxIteration(300)
                 .build();
 
-        List<Pair<Text, Text>> articlesPairs = getArticlesPairs(ArticlesDeserializer.fromDirectory(articles.toString()));
+
+        StreamingKMeansParameters streamingKMeansParameters = new StreamingKMeansParameters.Builder()
+                .clustersNumber(8)
+                .maxIterations(20)
+                .measureClass(EuclideanDistanceMeasure.class)
+                .searcherClass(org.apache.mahout.math.neighborhood.BruteSearch.class)
+                .build();
+
+        List<Pair<Writable, Writable>> articlesPairs = getArticlesPairs(ArticlesDeserializer.fromDirectory(articles.toString()));
 
         SequenceFileWriter writer = new SequenceFileWriter(configuration);
         KMeansClusterizer kmeans = new KMeansClusterizer(configuration);
@@ -76,20 +86,36 @@ public class Main {
             TFIDFVectorizer vectorizer = new TFIDFVectorizer(configuration);
             Path tfidfVectors = vectorizer.vectorize(tfVectors, tfidfVectorsDirectory, tfidfParameters, 100);
 
-            CanopyCentroids centroids = new CanopyCentroids(configuration);
-            centroids.setCanopyThresholds(500, 100);
-            Path generatedCentroids = centroids.generateCentroids(tfidfVectors, centroidsDirectory);
+//            CanopyCentroids centroids = new CanopyCentroids(configuration);
+//            centroids.setCanopyThresholds(500, 100);
+//            Path generatedCentroids = centroids.generateCentroids(tfidfVectors, centroidsDirectory);
 
 //            StreamingKMeansClusterizer clusterizer = new StreamingKMeansClusterizer(configuration);
 //            clusterizer.runClustering(tfidfVectors, new Path(output, "streamingKMeans"));
 
+//
+            StreamingKMeansClusterizer clusterizer = new StreamingKMeansClusterizer(configuration);
+
+
+            Path centroids = null;
 
             try {
-                kmeans.runClustering(tfidfVectors, generatedCentroids, kmeansDirectory, kMeansParameters);
+                centroids = clusterizer.runClustering(tfidfVectors, streamingKMeansDirectory, streamingKMeansParameters);
             } catch (FileAlreadyExistsException e) {
-                FileUtils.cleanDirectory(new File(kmeansDirectory.toString()));
-                kmeans.runClustering(tfidfVectors, generatedCentroids, kmeansDirectory, kMeansParameters);
+                FileUtils.deleteDirectory(new File(streamingKMeansDirectory.toString()));
+                centroids = clusterizer.runClustering(tfidfVectors, streamingKMeansDirectory, streamingKMeansParameters);
             }
+
+//            KMeansClusterizer kMeansClusterizer = new KMeansClusterizer(configuration);
+//
+//
+//            try {
+//                kMeansClusterizer.runClustering(tfidfVectors, centroids, kmeansDirectory, kMeansParameters);
+//            } catch (FileAlreadyExistsException e) {
+//                FileUtils.deleteDirectory(new File(kmeansDirectory.toString()));
+//                kMeansClusterizer.runClustering(tfidfVectors, centroids, kmeansDirectory, kMeansParameters);
+//            }
+
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -97,17 +123,19 @@ public class Main {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
         }
 
 
     }
 
 
-    private static List<Pair<Text, Text>> getArticlesPairs(Iterator<IArticle> articleIterator) {
-        List<Pair<Text, Text>> articlesList = new ArrayList<>();
+    private static List<Pair<Writable, Writable>> getArticlesPairs(Iterator<IArticle> articleIterator) {
+        List<Pair<Writable, Writable>> articlesList = new ArrayList<>();
 
         articleIterator.forEachRemaining(article -> {
-            articlesList.add(new Pair<Text, Text>(ArticleExtractor.extractTitle(article),
+            articlesList.add(new Pair<>(ArticleExtractor.extractTitle(article),
                     ArticleExtractor.extractContent(article)));
         });
 

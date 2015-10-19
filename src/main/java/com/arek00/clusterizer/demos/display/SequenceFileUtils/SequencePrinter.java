@@ -4,14 +4,18 @@ package com.arek00.clusterizer.demos.display.SequenceFileUtils;
 import com.arek00.clusterizer.demos.ClusteredPoint;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.mahout.clustering.Cluster;
 import org.apache.mahout.clustering.classify.WeightedPropertyVectorWritable;
 import org.apache.mahout.clustering.iterator.ClusterWritable;
+import org.apache.mahout.clustering.kmeans.Kluster;
+import org.apache.mahout.clustering.streaming.mapreduce.CentroidWritable;
 import org.apache.mahout.common.Pair;
 import org.apache.mahout.common.distance.EuclideanDistanceMeasure;
 import org.apache.mahout.common.iterator.sequencefile.SequenceFileIterable;
+import org.apache.mahout.math.Centroid;
 import org.apache.mahout.math.ConstantVector;
 import org.apache.mahout.math.NamedVector;
 import org.apache.mahout.math.Vector;
@@ -45,6 +49,11 @@ public class SequencePrinter {
                             } else if (pair.getSecond() instanceof WeightedPropertyVectorWritable) {
                                 System.out.format("Cluster number %s: ", pair.getFirst());
                                 printPoint((WeightedPropertyVectorWritable) pair.getSecond());
+                            } else if (pair.getSecond() instanceof CentroidWritable) {
+                                printCentroid((IntWritable) pair.getFirst(), (CentroidWritable) pair.getSecond());
+                            } else {
+                                System.out.format("First class: %s, Second class: %s", pair.getFirst().getClass().getName(),
+                                        pair.getSecond().getClass().getName());
                             }
 
                             System.out.print("\n");
@@ -71,7 +80,7 @@ public class SequencePrinter {
 
         System.out.format("Point's properties: Weight: %s, Distance from 0: %s, Other properties: %s", point.getWeight(), distanceFromZero, properties);
 
-        if(point.getVector() instanceof NamedVector) {
+        if (point.getVector() instanceof NamedVector) {
             String pointName = ((NamedVector) point.getVector()).getName();
 
             System.out.format(" Point's Name: %s", pointName);
@@ -88,10 +97,19 @@ public class SequencePrinter {
         Cluster cluster = clusterWritable.getValue();
         double distanceFromZero = calculateDistanceFromZeroPoint(cluster.getCenter());
 
-
         System.out.format("Cluster's properties: Cluster ID: %s, Cluster's distance from 0: %s, Is Converged: %s, " +
                         "\nCluster radius: %s",
                 cluster.getId(), distanceFromZero, cluster.isConverged(), cluster.getRadius().toString());
+    }
+
+
+    private static void printCentroid(IntWritable index, CentroidWritable centroidWritable) {
+        int centroidIndex = index.get();
+        Centroid centroid = centroidWritable.getCentroid();
+
+        double distanceFromZero = calculateDistanceFromZeroPoint(centroid.getVector());
+
+        System.out.format("ID: %s. Centroid properties: Centroid weight: %s, Centroid distance from 0: %s", centroid.getIndex(), centroid.getWeight(), distanceFromZero);
     }
 
     public static List<ClusteredPoint> getPoints(Path sequenceFilePath) {

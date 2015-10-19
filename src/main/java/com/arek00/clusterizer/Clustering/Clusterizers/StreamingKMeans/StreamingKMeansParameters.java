@@ -54,7 +54,6 @@ public class StreamingKMeansParameters {
 
     public static class Builder {
 
-
         private int numClusters = 2;
         private int estimatedNumMapClusters = numClusters + 1;
         private float estimatedDistanceCutOff = 1.0f / numClusters;
@@ -63,7 +62,7 @@ public class StreamingKMeansParameters {
         private boolean randomInit = false;
         private boolean ignoreWeights = true;
         private float testProbability = 0.5f;
-        private int numBallKMeans = 1;
+        private int numBallKMeans = 4;
         private String measureClass = SquaredEuclideanDistanceMeasure.class.getCanonicalName();
         private String searcherClass = ProjectionSearch.class.getCanonicalName();
         private int searchSize = 1;
@@ -86,7 +85,10 @@ public class StreamingKMeansParameters {
             NumberValidator.greaterThan("Clusters Number has to be greater than 1", 1, clustersNumber);
 
             this.numClusters = clustersNumber;
-            this.estimatedDistanceCutOff = 1.0f / numClusters;
+
+            this.estimatedDistanceCutOff = (this.estimatedDistanceCutOff != -1) ? 1.0f / numClusters : this.estimatedDistanceCutOff;
+
+            this.estimatedNumMapClusters = clustersNumber + 1;
             return this;
         }
 
@@ -201,6 +203,7 @@ public class StreamingKMeansParameters {
          * The number of BallKMeans runs in the reducer that determine the centroids to return
          * (clusters are computed for the training set and the error is computed on the test set)
          * Value greater than 0
+         * Default is 4
          */
         public Builder numberOfBallKMeans(int numberOfBallKMeans) {
             NumberValidator.greaterThan("Number of ball KMeans has to be greater than 0", 0, numberOfBallKMeans);
