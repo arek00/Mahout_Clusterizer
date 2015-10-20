@@ -8,6 +8,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.mahout.clustering.lda.LDAPrintTopics;
 import org.apache.mahout.clustering.streaming.cluster.BallKMeans;
 import org.apache.mahout.clustering.streaming.mapreduce.StreamingKMeansDriver;
+import org.apache.mahout.common.distance.DistanceMeasure;
 import org.apache.mahout.math.neighborhood.UpdatableSearcher;
 
 import java.io.IOException;
