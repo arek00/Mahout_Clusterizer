@@ -36,8 +36,9 @@ public class SequenceFileWriter {
      * @param sequenceFile
      * @throws IOException Throws when couldn't write to given path.
      */
-    public void writeToSequenceFile(List<Pair<Writable, Writable>> pairs, Path sequenceFile) throws IOException {
-        writer = new SequenceFile.Writer(fileSystem, configuration, sequenceFile, Writable.class, Writable.class);
+    public void writeToSequenceFile(List<Pair<Writable, Writable>> pairs, Path sequenceFile, Class keyClass, Class valueClass)
+            throws IOException {
+        writer = new SequenceFile.Writer(fileSystem, configuration, sequenceFile, keyClass, valueClass);
 
         pairs.stream()
                 .forEach(pair -> {

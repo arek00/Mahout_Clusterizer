@@ -72,7 +72,7 @@ public class CentroidToClusterConverter {
             clusters.add(clusterPair);
         });
 
-        writer.writeToSequenceFile(clusters, generatedClustersFile);
+        writer.writeToSequenceFile(clusters, generatedClustersFile, IntWritable.class, ClusterWritable.class);
         return generatedClustersFile;
     }
 

@@ -18,8 +18,11 @@ import com.arek00.webCrawler.Entities.Articles.IArticle;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.FileAlreadyExistsException;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.apache.mahout.common.Pair;
 import org.apache.mahout.common.distance.EuclideanDistanceMeasure;
 import org.apache.mahout.vectorizer.common.PartialVectorMerger;
@@ -34,7 +37,11 @@ import java.util.concurrent.ExecutionException;
 
 public class Main {
 
+    private static final Logger logger = LogManager.getLogger(Main.class);
+
     public static void main(String[] args) {
+        logger.info("Starting application");
+
         Configuration configuration = new Configuration();
 
         Path articles = new Path("/home/arek/articles/yahooArticles");
@@ -76,9 +83,18 @@ public class Main {
         KMeansClusterizer kmeans = new KMeansClusterizer(configuration);
 
         try {
-            writer.writeToSequenceFile(articlesPairs, sequenceFile);
+
+            logger.info("Writing to articles to sequence file");
+
+            writer.writeToSequenceFile(articlesPairs, sequenceFile, Text.class, Text.class);
+
+            logger.info("Tokenizing articles");
+
             Tokenizer tokenizer = new StandardTokenizer(configuration);
             Path tokenizedDocuments = tokenizer.tokenize(sequenceFile, tokenizedDirectory);
+
+            logger.info("Tokenizing output path: " + tokenizedDocuments);
+            logger.info("Run TFVectorizer");
 
             TFVectorizer tfVectorizer = new TFVectorizer(configuration);
             Path tfVectors = tfVectorizer.createVectors(tokenizedDocuments, tfVectorsDirectory, tfParameters, 100);
@@ -106,15 +122,15 @@ public class Main {
                 centroids = clusterizer.runClustering(tfidfVectors, streamingKMeansDirectory, streamingKMeansParameters);
             }
 
-//            KMeansClusterizer kMeansClusterizer = new KMeansClusterizer(configuration);
+            KMeansClusterizer kMeansClusterizer = new KMeansClusterizer(configuration);
 //
-//
-//            try {
-//                kMeansClusterizer.runClustering(tfidfVectors, centroids, kmeansDirectory, kMeansParameters);
-//            } catch (FileAlreadyExistsException e) {
-//                FileUtils.deleteDirectory(new File(kmeansDirectory.toString()));
-//                kMeansClusterizer.runClustering(tfidfVectors, centroids, kmeansDirectory, kMeansParameters);
-//            }
+
+            try {
+                kMeansClusterizer.runClustering(tfidfVectors, centroids, kmeansDirectory, kMeansParameters);
+            } catch (FileAlreadyExistsException e) {
+                FileUtils.deleteDirectory(new File(kmeansDirectory.toString()));
+                kMeansClusterizer.runClustering(tfidfVectors, centroids, kmeansDirectory, kMeansParameters);
+            }
 
 
         } catch (IOException e) {
