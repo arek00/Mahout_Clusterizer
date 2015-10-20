@@ -5,6 +5,8 @@ import lombok.NonNull;
 import org.apache.commons.math.stat.clustering.KMeansPlusPlusClusterer;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.apache.mahout.clustering.lda.LDAPrintTopics;
 import org.apache.mahout.clustering.streaming.cluster.BallKMeans;
 import org.apache.mahout.clustering.streaming.mapreduce.StreamingKMeansDriver;
@@ -16,7 +18,7 @@ import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
 public class StreamingKMeansClusterizer {
-
+    private static final Logger logger = LogManager.getLogger(StreamingKMeansClusterizer.class);
     //TODO Create SequenceFileWriter that convert points saved as Centroids to Clusters
     //to do this, use Kluster class, SequenceFileReader to read created SequenceFile
     //SequenceFileWriter to write centroids as clusters
@@ -37,7 +39,22 @@ public class StreamingKMeansClusterizer {
                 output
         );
 
-        return output;
+        DistanceMeasure measure = null;
+        try {
+            measure = (DistanceMeasure) Class.forName(parameters.getMeasureClass()).newInstance();
+        } catch (InstantiationException e) {
+            logger.error("Couldn't instantiate DistanceMeasure object: " + measure.getClass().getCanonicalName());
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            logger.error("IlegalAccess during instantiating DistanceMeasure object.");
+            e.printStackTrace();
+        }
+        CentroidToClusterConverter converter = new CentroidToClusterConverter(configuration, measure);
+
+        Path convertedClustersPath = new Path(output, "clusters");
+        Path generatedClusters = converter.convertDirectory(output, convertedClustersPath);
+
+        return generatedClusters;
     }
 
     private void configureOptionsForWorkers(Configuration configuration, StreamingKMeansParameters parameters)
@@ -61,7 +78,6 @@ public class StreamingKMeansClusterizer {
                 parameters.isReduceStreamingKMeans()
         );
     }
-
 
 
 }

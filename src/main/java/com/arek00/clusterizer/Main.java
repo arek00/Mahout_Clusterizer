@@ -66,7 +66,7 @@ public class Main {
 
         KMeansParameters kMeansParameters = new KMeansParameters.Builder()
                 .convergenceDelta(0.5f)
-                .maxIteration(300)
+                .maxIteration(20)
                 .build();
 
 

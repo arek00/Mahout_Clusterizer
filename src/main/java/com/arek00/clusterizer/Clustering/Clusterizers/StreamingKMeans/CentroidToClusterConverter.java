@@ -8,8 +8,14 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.SequenceFile;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.mapred.SequenceFileRecordReader;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.apache.mahout.clustering.Cluster;
+import org.apache.mahout.clustering.canopy.Canopy;
 import org.apache.mahout.clustering.iterator.ClusterWritable;
 import org.apache.mahout.clustering.kmeans.Kluster;
 import org.apache.mahout.clustering.streaming.mapreduce.CentroidWritable;
@@ -20,11 +26,14 @@ import org.apache.mahout.math.Centroid;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
 public class CentroidToClusterConverter {
+
+    private static final Logger logger = LogManager.getLogger(CentroidToClusterConverter.class);
 
     private Configuration configuration;
     private FileSystem fileSystem;
@@ -54,31 +63,30 @@ public class CentroidToClusterConverter {
     }
 
 
-
     private Path saveClusters(Path outputSequenceDirectory, Iterator<Centroid> centroidIterator) throws IOException {
         SequenceFileWriter writer = new SequenceFileWriter(this.configuration);
-        int index = 0;
 
-        Path generatedClustersFile= new Path(outputSequenceDirectory, "generatedClusters");
+        Path generatedClustersFile = new Path(outputSequenceDirectory, "part-generatedClusters");
 
-        List<Pair<Writable, Writable>> clusters = Collections.emptyList();
+        List<Pair<Writable, Writable>> clusters;
+        clusters = new ArrayList<Pair<Writable, Writable>>();
 
         centroidIterator.forEachRemaining(centroid -> {
             Cluster cluster = convert(centroid, this.measure);
-            IntWritable indexWritable = new IntWritable(index);
+            Text index = new Text(Integer.toString(cluster.getId()));
             ClusterWritable clusterWritable = new ClusterWritable(cluster);
 
-            Pair<Writable, Writable> clusterPair = new Pair<>(indexWritable, clusterWritable);
+            Pair<Writable, Writable> clusterPair = new Pair<>(index, clusterWritable);
             clusters.add(clusterPair);
         });
 
-        writer.writeToSequenceFile(clusters, generatedClustersFile, IntWritable.class, ClusterWritable.class);
-        return generatedClustersFile;
+        writer.writeToSequenceFile(clusters, generatedClustersFile, Text.class, ClusterWritable.class);
+        return outputSequenceDirectory;
     }
 
     private List<Centroid> readCentroids(Path directory) {
         File directoryFileInstance = new File(directory.toString());
-        List<Centroid> centroids = Collections.emptyList();
+        List<Centroid> centroids = new ArrayList<Centroid>();
         Iterator<File> sequenceFiles = FileUtils.iterateFiles(directoryFileInstance, null, false);
 
         sequenceFiles.forEachRemaining(file -> {
@@ -92,7 +100,12 @@ public class CentroidToClusterConverter {
     }
 
     private Cluster convert(Centroid centroid, DistanceMeasure measure) {
-        return new Kluster(centroid.getVector(), centroid.getIndex(), measure);
+        Kluster cluster = new Kluster(centroid.getVector(), centroid.getIndex(), measure);
+        cluster.calculateConvergence(0.5);
+
+        logger.info("Cluster is converged: " + cluster.isConverged());
+
+        return cluster;
     }
 
 
@@ -100,14 +113,19 @@ public class CentroidToClusterConverter {
         SequenceFileIterable<Writable, Writable> centroidsIterator =
                 new SequenceFileIterable<Writable, Writable>(centroidsSequenceFile, this.configuration);
 
-        List<Centroid> centroidList = Collections.emptyList();
+        List<Centroid> centroidList = new ArrayList<Centroid>();
 
-        centroidsIterator.forEach(pair -> {
-            if (pair.getSecond() instanceof CentroidWritable) {
-                Centroid centroid = ((CentroidWritable) pair.getSecond()).getCentroid();
-                centroidList.add(centroid);
-            }
-        });
+        try {
+            centroidsIterator.forEach(pair -> {
+                if (pair.getSecond() instanceof CentroidWritable) {
+                    Centroid centroid = ((CentroidWritable) pair.getSecond()).getCentroid();
+                    centroidList.add(centroid);
+                }
+            });
+        } catch(IllegalStateException e) {
+            logger.error(centroidsSequenceFile + " is not a SequenceFile.");
+            return Collections.<Centroid>emptyIterator();
+        }
 
         return centroidList.iterator();
     }
