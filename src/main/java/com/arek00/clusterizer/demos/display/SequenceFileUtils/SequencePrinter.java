@@ -1,7 +1,6 @@
 package com.arek00.clusterizer.demos.display.SequenceFileUtils;
 
 
-import com.arek00.clusterizer.demos.ClusteredPoint;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
@@ -10,9 +9,7 @@ import org.apache.hadoop.io.Writable;
 import org.apache.mahout.clustering.Cluster;
 import org.apache.mahout.clustering.classify.WeightedPropertyVectorWritable;
 import org.apache.mahout.clustering.iterator.ClusterWritable;
-import org.apache.mahout.clustering.kmeans.Kluster;
 import org.apache.mahout.clustering.streaming.mapreduce.CentroidWritable;
-import org.apache.mahout.common.Pair;
 import org.apache.mahout.common.distance.EuclideanDistanceMeasure;
 import org.apache.mahout.common.iterator.sequencefile.SequenceFileIterable;
 import org.apache.mahout.math.Centroid;
@@ -20,10 +17,6 @@ import org.apache.mahout.math.ConstantVector;
 import org.apache.mahout.math.NamedVector;
 import org.apache.mahout.math.Vector;
 
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -110,23 +103,6 @@ public class SequencePrinter {
         double distanceFromZero = calculateDistanceFromZeroPoint(centroid.getVector());
 
         System.out.format("ID: %s. Centroid properties: Centroid weight: %s, Centroid distance from 0: %s", centroid.getIndex(), centroid.getWeight(), distanceFromZero);
-    }
-
-    public static List<ClusteredPoint> getPoints(Path sequenceFilePath) {
-
-        List<ClusteredPoint> pointsList;
-        SequenceFileIterable<Writable, Writable> iterable =
-                new SequenceFileIterable<Writable, Writable>(sequenceFilePath, SequencePrinter.configuration);
-
-        pointsList = StreamSupport.stream(iterable.spliterator(), false).
-                map(i -> {
-                    return new ClusteredPoint(i.getFirst().toString(),
-                            i.getSecond().toString());
-                }).collect(Collectors.toList());
-
-        System.out.format("Created %d points.", pointsList.size());
-
-        return pointsList;
     }
 
     public static void main(String[] args) {

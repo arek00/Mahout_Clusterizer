@@ -1,6 +1,7 @@
 package com.arek00.clusterizer.demos.display.DistanceDisplay.Points;
 
 
+import com.arek00.clusterizer.Utils.VectorDistance;
 import lombok.Getter;
 import lombok.NonNull;
 import org.apache.hadoop.io.IntWritable;
@@ -9,11 +10,14 @@ import org.apache.mahout.clustering.classify.WeightedPropertyVectorWritable;
 import org.apache.mahout.common.Pair;
 import org.apache.mahout.common.distance.DistanceMeasure;
 import org.apache.mahout.common.distance.EuclideanDistanceMeasure;
+import org.apache.mahout.common.distance.SquaredEuclideanDistanceMeasure;
 import org.apache.mahout.math.ConstantVector;
 import org.apache.mahout.math.NamedVector;
 import org.apache.mahout.math.Vector;
 
-public class ClusteredPoint {
+public class ClusteredPoint implements DisplayedPointEntity{
+
+    private static final DistanceMeasure measureMethod = new SquaredEuclideanDistanceMeasure();
 
     private WeightedPropertyVectorWritable pointWritable;
 
@@ -52,11 +56,7 @@ public class ClusteredPoint {
     }
 
     private double doGetDistance(Vector pointVector) {
-        Vector zeroVector = new ConstantVector(0d, pointVector.size());
-
-        DistanceMeasure measure = new EuclideanDistanceMeasure();
-
-        return measure.distance(pointVector, zeroVector);
+        return VectorDistance.distanceFromZero(pointVector, measureMethod);
     }
 
     private String doGetPointLabel(Vector vector) {
@@ -67,8 +67,4 @@ public class ClusteredPoint {
             return " ";
         }
     }
-
-
-
-
 }

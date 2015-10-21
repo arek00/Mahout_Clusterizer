@@ -1,5 +1,7 @@
 package com.arek00.clusterizer.demos.display.DistanceDisplay;
 
+import com.arek00.clusterizer.demos.display.DistanceDisplay.ChartUtils.ClusteredPointDataConverter;
+import com.arek00.clusterizer.demos.display.SequenceFileUtils.SequenceFileExtractor;
 import com.arek00.clusterizer.demos.display.SequenceFileUtils.SequencePrinter;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -37,7 +39,7 @@ public class DistanceDisplayer extends Application {
 
 
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/style.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/distanceDisplayer/style.fxml"));
             Parent parent = loader.load();
             Scene scene = new Scene(parent);
             primaryStage.setScene(scene);
@@ -46,8 +48,8 @@ public class DistanceDisplayer extends Application {
 
 
             Arrays.stream(DistanceDisplayer.clusteredPoints).
-                    forEach(each -> {
-                        addDataToChart(controller, each);
+                    forEach(file -> {
+                        addDataToChart(controller, file);
                     });
 
             primaryStage.show();
@@ -61,12 +63,10 @@ public class DistanceDisplayer extends Application {
         Path pointsSequenceFile = new Path(pointsFilePath);
 
         controller.addDataToChart(
-                SequencePrinter.getPoints(pointsSequenceFile).
+                SequenceFileExtractor.getDataFromSequenceFile(pointsSequenceFile).
                         stream().
                         map(point -> ClusteredPointDataConverter.getData(point)).
                         collect(Collectors.toList())
         );
-
-
     }
 }

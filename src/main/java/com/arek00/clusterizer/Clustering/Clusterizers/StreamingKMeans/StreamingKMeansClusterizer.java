@@ -19,9 +19,6 @@ import java.util.concurrent.ExecutionException;
 
 public class StreamingKMeansClusterizer {
     private static final Logger logger = LogManager.getLogger(StreamingKMeansClusterizer.class);
-    //TODO Create SequenceFileWriter that convert points saved as Centroids to Clusters
-    //to do this, use Kluster class, SequenceFileReader to read created SequenceFile
-    //SequenceFileWriter to write centroids as clusters
 
     private Configuration configuration;
 

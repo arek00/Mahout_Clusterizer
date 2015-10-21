@@ -44,8 +44,8 @@ public class Main {
 
         Configuration configuration = new Configuration();
 
-        Path articles = new Path("/home/arek/articles/yahooArticles");
-        Path output = new Path("/home/arek/clusterizer/streamingKMeansTest");
+        Path articles = new Path("/home/arek/articles/articles");
+        Path output = new Path("/home/arek/clusterizer/streamingKMeansArticles");
         Path sequenceFile = new Path(output, "sequenceFile");
         Path tokenizedDirectory = new Path(output, "tokenizedFiles");
         Path tfVectorsDirectory = new Path(output, "tfVectors");
@@ -71,8 +71,8 @@ public class Main {
 
 
         StreamingKMeansParameters streamingKMeansParameters = new StreamingKMeansParameters.Builder()
-                .clustersNumber(8)
-                .maxIterations(20)
+                .clustersNumber(50)
+                .maxIterations(50)
                 .measureClass(EuclideanDistanceMeasure.class)
                 .searcherClass(org.apache.mahout.math.neighborhood.BruteSearch.class)
                 .build();
