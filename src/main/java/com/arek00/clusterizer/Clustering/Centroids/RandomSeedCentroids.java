@@ -5,7 +5,9 @@ import lombok.NonNull;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.mahout.clustering.kmeans.RandomSeedGenerator;
+import org.apache.mahout.common.distance.DistanceMeasure;
 import org.apache.mahout.common.distance.EuclideanDistanceMeasure;
+import org.apache.mahout.common.distance.SquaredEuclideanDistanceMeasure;
 
 import java.io.IOException;
 
@@ -16,6 +18,7 @@ public class RandomSeedCentroids implements CentroidsGenerator{
 
     private Configuration configuration;
     private int kPoints = 2;
+    private DistanceMeasure measure = new SquaredEuclideanDistanceMeasure();
 
     public RandomSeedCentroids(@NonNull Configuration configuration) {
         this.configuration = configuration;
@@ -33,6 +36,17 @@ public class RandomSeedCentroids implements CentroidsGenerator{
     }
 
     /**
+     * Set distance measure method.
+     * Default is SquaredEuclideanDistanceMeasure
+     *
+     * @param measure
+     */
+    public void setDistanceMeasure(@NonNull DistanceMeasure measure) {
+        this.measure = measure;
+    }
+
+
+    /**
      * Create random centroids points from given vectors.
      * Save result in output directory.
      *
@@ -40,7 +54,12 @@ public class RandomSeedCentroids implements CentroidsGenerator{
      * @param output
      */
     public Path generateCentroids(Path vectors, Path output) throws IOException {
-        return RandomSeedGenerator.buildRandom(this.configuration, vectors, output, kPoints, new EuclideanDistanceMeasure());
+        return RandomSeedGenerator.buildRandom(this.configuration,
+                vectors,
+                output,
+                kPoints,
+                measure
+        );
     }
 
 }

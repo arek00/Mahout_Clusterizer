@@ -2,7 +2,10 @@ package com.arek00.clusterizer.Clustering.Clusterizers.KMeans;
 
 import com.arek00.clusterizer.validators.NumberValidator;
 import lombok.Getter;
+import lombok.NonNull;
 import org.apache.hadoop.fs.Path;
+import org.apache.mahout.common.distance.DistanceMeasure;
+import org.apache.mahout.common.distance.SquaredEuclideanDistanceMeasure;
 
 /**
  * Value object for parameters to use KMeansClusterizer

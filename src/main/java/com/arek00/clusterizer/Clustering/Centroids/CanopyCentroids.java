@@ -6,7 +6,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.mahout.clustering.canopy.CanopyDriver;
 import org.apache.mahout.clustering.lda.LDAPrintTopics;
+import org.apache.mahout.common.distance.DistanceMeasure;
 import org.apache.mahout.common.distance.EuclideanDistanceMeasure;
+import org.apache.mahout.common.distance.SquaredEuclideanDistanceMeasure;
 
 import java.io.IOException;
 
@@ -17,6 +19,7 @@ public class CanopyCentroids implements CentroidsGenerator {
 
     private Configuration configuration;
     private double T1, T2;
+    private DistanceMeasure measure = new SquaredEuclideanDistanceMeasure();
 
     public CanopyCentroids(@NonNull Configuration configuration) {
         this.configuration = configuration;
@@ -37,6 +40,16 @@ public class CanopyCentroids implements CentroidsGenerator {
     }
 
     /**
+     * Set distance measure method.
+     * Default is SquaredEuclideanDistanceMeasure
+     *
+     * @param measure
+     */
+    public void setDistanceMeasure(@NonNull DistanceMeasure measure) {
+        this.measure = measure;
+    }
+
+    /**
      * Generate centroids with using Canopy Clustering algorithm.
      * Set thresholds before running.
      *
@@ -49,7 +62,7 @@ public class CanopyCentroids implements CentroidsGenerator {
         CanopyDriver.run(
                 this.configuration,
                 vectors, output,
-                new EuclideanDistanceMeasure(),
+                measure,
                 T1, T2,
                 true, 0, true);
     return new Path(output, "clusters-0-final");

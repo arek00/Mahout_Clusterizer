@@ -7,6 +7,7 @@ import javafx.scene.chart.ScatterChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import org.apache.log4j.LogManager;
@@ -30,12 +31,11 @@ public class ViewController {
 
         boolean isCluster = false;
 
-        if(data.size() > 0) {
+        if (data.size() > 0) {
             isCluster = (data.get(0).getExtraValue() instanceof ClusterCenter);
             logger.info("Clusters data: " + isCluster);
             logger.info(data.get(0).getExtraValue().getClass().getName());
-        }
-        else {
+        } else {
             return;
         }
 
@@ -45,6 +45,23 @@ public class ViewController {
                 forEach(serie -> {
                     pointsScatteredChart.getData().addAll(serie);
                 });
+
+        setAccesibleHelpText(pointsScatteredChart.getData());
+    }
+
+
+    private void setAccesibleHelpText(List<XYChart.Series> points) {
+        points.forEach(serie -> {
+            serie.getData().forEach(point -> {
+
+                if (point instanceof XYChart.Data) {
+                    XYChart.Data dataPoint = (XYChart.Data) point;
+                    String accessibleHelpText = dataPoint.getExtraValue().toString();
+                    Tooltip tooltip = new Tooltip(accessibleHelpText);
+                    Tooltip.install(dataPoint.getNode(), tooltip);
+                }
+            });
+        });
     }
 }
 
@@ -60,8 +77,7 @@ class SeriesCreator {
 
                     if (clusters) {
                         clusterName = "Clusters";
-                    }
-                    else {
+                    } else {
                         clusterName = String.format("Cluster %d", dataEntity.getYValue());
                     }
 

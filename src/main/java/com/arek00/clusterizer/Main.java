@@ -3,6 +3,7 @@ package com.arek00.clusterizer;
 
 import com.arek00.clusterizer.ArticleUtils.ArticleExtractor;
 import com.arek00.clusterizer.ArticleUtils.ArticlesDeserializer;
+import com.arek00.clusterizer.Clustering.Centroids.CanopyCentroids;
 import com.arek00.clusterizer.Clustering.Clusterizers.KMeans.KMeansClusterizer;
 import com.arek00.clusterizer.Clustering.Clusterizers.KMeans.KMeansParameters;
 import com.arek00.clusterizer.Clustering.Clusterizers.StreamingKMeans.StreamingKMeansClusterizer;
@@ -44,8 +45,8 @@ public class Main {
 
         Configuration configuration = new Configuration();
 
-        Path articles = new Path("/home/arek/articles/articles");
-        Path output = new Path("/home/arek/clusterizer/streamingKMeansArticles");
+        Path articles = new Path("/home/arek/articles/testArticles");
+        Path output = new Path("/home/arek/clusterizer/differentArticlesTest");
         Path sequenceFile = new Path(output, "sequenceFile");
         Path tokenizedDirectory = new Path(output, "tokenizedFiles");
         Path tfVectorsDirectory = new Path(output, "tfVectors");
@@ -73,7 +74,6 @@ public class Main {
         StreamingKMeansParameters streamingKMeansParameters = new StreamingKMeansParameters.Builder()
                 .clustersNumber(50)
                 .maxIterations(50)
-                .measureClass(EuclideanDistanceMeasure.class)
                 .searcherClass(org.apache.mahout.math.neighborhood.BruteSearch.class)
                 .build();
 
@@ -102,24 +102,24 @@ public class Main {
             TFIDFVectorizer vectorizer = new TFIDFVectorizer(configuration);
             Path tfidfVectors = vectorizer.vectorize(tfVectors, tfidfVectorsDirectory, tfidfParameters, 100);
 
-//            CanopyCentroids centroids = new CanopyCentroids(configuration);
-//            centroids.setCanopyThresholds(500, 100);
+            CanopyCentroids canopyCentroids = new CanopyCentroids(configuration);
+            canopyCentroids.setCanopyThresholds(20, 5);
 //            Path generatedCentroids = centroids.generateCentroids(tfidfVectors, centroidsDirectory);
 
 //            StreamingKMeansClusterizer clusterizer = new StreamingKMeansClusterizer(configuration);
 //            clusterizer.runClustering(tfidfVectors, new Path(output, "streamingKMeans"));
 
 //
-            StreamingKMeansClusterizer clusterizer = new StreamingKMeansClusterizer(configuration);
+//            StreamingKMeansClusterizer clusterizer = new StreamingKMeansClusterizer(configuration);
 
 
             Path centroids = null;
 
             try {
-                centroids = clusterizer.runClustering(tfidfVectors, streamingKMeansDirectory, streamingKMeansParameters);
+                centroids = canopyCentroids.generateCentroids(tfidfVectors, centroidsDirectory);
             } catch (FileAlreadyExistsException e) {
-                FileUtils.deleteDirectory(new File(streamingKMeansDirectory.toString()));
-                centroids = clusterizer.runClustering(tfidfVectors, streamingKMeansDirectory, streamingKMeansParameters);
+                FileUtils.deleteDirectory(new File(centroidsDirectory.toString()));
+                centroids = canopyCentroids.generateCentroids(tfidfVectors, centroidsDirectory);
             }
 
             KMeansClusterizer kMeansClusterizer = new KMeansClusterizer(configuration);
@@ -139,10 +139,7 @@ public class Main {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
         }
-
 
     }
 

@@ -67,4 +67,9 @@ public class ClusteredPoint implements DisplayedPointEntity{
             return " ";
         }
     }
+
+    @Override
+    public String toString() {
+        return this.pointLabel;
+    }
 }
