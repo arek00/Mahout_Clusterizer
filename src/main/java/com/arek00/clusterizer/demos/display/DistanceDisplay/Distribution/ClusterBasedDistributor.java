@@ -7,6 +7,7 @@ import com.arek00.clusterizer.demos.display.DistanceDisplay.ViewController;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.XYChart;
 import lombok.NonNull;
+import org.apache.mahout.common.distance.DistanceMeasure;
 import org.apache.mahout.common.distance.SquaredEuclideanDistanceMeasure;
 import org.apache.mahout.math.Vector;
 
@@ -25,6 +26,7 @@ public class ClusterBasedDistributor implements Distributor {
     public void distribute(@NonNull ObservableList<XYChart.Series> chartData) {
         clustersSeries = getClustersSeries(chartData);
         distributeClusters(clustersSeries);
+        distributePoints(chartData);
 
 
     }
@@ -71,15 +73,8 @@ public class ClusterBasedDistributor implements Distributor {
             clusteredPoint = (ClusteredPoint) point.getExtraValue();
         }
 
-        Vector clusterCentroid = getClusterCentroid(clusteredPoint.getClusterId());
-        Vector pointCenter = clusteredPoint.getCenter();
-
-        double distanceFromCluster =
-                VectorDistance.distance(clusterCentroid, pointCenter, new SquaredEuclideanDistanceMeasure());
-
-        double pointPosition = VectorDistance.distanceFromZero(clusterCentroid, new SquaredEuclideanDistanceMeasure());
-        pointPosition += distanceFromCluster;
-        point.setXValue(pointPosition);
+        double xValue = calculatePointXValue(clusteredPoint, getClusterCentroid(clusteredPoint.getClusterId()));
+        point.setXValue(xValue);
     }
 
     private Vector getClusterCentroid(int clusterId) {
@@ -96,6 +91,22 @@ public class ClusterBasedDistributor implements Distributor {
         }
 
         throw new IllegalStateException("Couldn't find cluster with id " + clusterId);
+    }
+
+    private double calculatePointXValue(ClusteredPoint point, Vector clusterCentroid) {
+        DistanceMeasure distanceMeasure = new SquaredEuclideanDistanceMeasure();
+        Vector pointCenter = point.getCenter();
+
+        double distanceFromCluster =
+                VectorDistance.distance(clusterCentroid, pointCenter, distanceMeasure);
+
+        double pointToZeroDistance = VectorDistance.distanceFromZero(pointCenter, distanceMeasure);
+        double clusterToZeroDistance = VectorDistance.distanceFromZero(clusterCentroid, distanceMeasure);
+
+        double pointPosition = (pointToZeroDistance > clusterToZeroDistance) ? clusterToZeroDistance + distanceFromCluster :
+                clusterToZeroDistance - distanceFromCluster;
+
+        return pointPosition;
     }
 
 }
