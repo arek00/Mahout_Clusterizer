@@ -11,7 +11,7 @@
    <children>
       <AnchorPane fx:id="pointsPane" nodeOrientation="LEFT_TO_RIGHT" prefHeight="326.0" prefWidth="600.0">
          <children>
-            <ScatterChart fx:id="pointsScatteredChart" prefHeight="522.0" prefWidth="863.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <ScatterChart fx:id="pointsScatteredChart" prefHeight="474.0" prefWidth="863.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
               <xAxis>
                 <NumberAxis side="BOTTOM" />
               </xAxis>
@@ -20,5 +20,7 @@
               </yAxis>
             </ScatterChart>
          </children></AnchorPane>
+      <Button fx:id="zeroPointDistributionButton" disable="true" layoutX="14.0" layoutY="474.0" mnemonicParsing="false" onAction="#onZerPointDistributionClick" text="Distribution Based On Zero Point" />
+      <Button fx:id="clustersBasedDistributionButton" disable="true" layoutX="14.0" layoutY="517.0" mnemonicParsing="false" onAction="#onClusterBasedDistributionClick" prefHeight="26.0" prefWidth="232.0" text="Distribution Based On Clusters" />
    </children>
 </Pane>

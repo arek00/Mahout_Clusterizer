@@ -8,6 +8,7 @@ import org.apache.mahout.clustering.Cluster;
 import org.apache.mahout.clustering.iterator.ClusterWritable;
 import org.apache.mahout.common.distance.DistanceMeasure;
 import org.apache.mahout.common.distance.SquaredEuclideanDistanceMeasure;
+import org.apache.mahout.math.Vector;
 
 public class ClusterCenter implements DisplayedPointEntity {
 
@@ -15,12 +16,17 @@ public class ClusterCenter implements DisplayedPointEntity {
 
     @Getter private int clusterId;
     @Getter private double distanceFromZero;
+    @Getter private Cluster cluster;
 
     public ClusterCenter(@NonNull ClusterWritable clusterWritable) {
-        Cluster cluster = clusterWritable.getValue();
+        this.cluster = clusterWritable.getValue();
 
         this.clusterId = cluster.getId();
         this.distanceFromZero = VectorDistance.distanceFromZero(cluster.getCenter(), measureMethod);
     }
 
+    @Override
+    public Vector getCenter() {
+        return cluster.getCenter();
+    }
 }

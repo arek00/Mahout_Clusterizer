@@ -109,7 +109,6 @@ public class ClustersDistanceTest {
 
     @Test
     public void testDistanceBetweenClustersAndZeroPoint() {
-        int clustersCount = clusters.size();
 
         for(Cluster cluster : clusters)  {
             for(Cluster clusterToCompare : clusters) {
@@ -129,10 +128,7 @@ public class ClustersDistanceTest {
                 logger.info("Distance from A to 0: " + clusterToZero);
                 logger.info("Distance from B to 0: " + comparingClusterToZero);
             }
-
         }
-
-
     }
 
 }

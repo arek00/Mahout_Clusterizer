@@ -25,6 +25,7 @@ public class ClusteredPoint implements DisplayedPointEntity{
     @Getter private double weight;
     @Getter private double distanceFromZero;
     @Getter private String pointLabel = "";
+    @Getter private Vector center;
 
     /**
      * Second element of Pair has to be WeightedPropertyVectorWritable.
@@ -49,6 +50,7 @@ public class ClusteredPoint implements DisplayedPointEntity{
         this.distanceFromZero = doGetDistance(vectorWritable.getVector());
         this.weight = vectorWritable.getWeight();
         this.pointLabel = doGetPointLabel(vectorWritable.getVector());
+        this.center = vectorWritable.getVector();
     }
 
     private int doGetClusterId(IntWritable clusterId) {
@@ -72,4 +74,5 @@ public class ClusteredPoint implements DisplayedPointEntity{
     public String toString() {
         return this.pointLabel;
     }
+
 }
