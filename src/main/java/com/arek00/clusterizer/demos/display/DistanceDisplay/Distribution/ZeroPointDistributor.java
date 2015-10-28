@@ -3,11 +3,12 @@ package com.arek00.clusterizer.demos.display.DistanceDisplay.Distribution;
 import com.arek00.clusterizer.demos.display.DistanceDisplay.Points.DisplayedPointEntity;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.XYChart;
+import lombok.NonNull;
 
 public class ZeroPointDistributor implements Distributor {
 
     @Override
-    public void distribute(ObservableList<XYChart.Series> chartData) {
+    public void distribute(@NonNull ObservableList<XYChart.Series> chartData) {
         chartData
                 .forEach(serie -> {
                     distributeSerie(serie);
@@ -15,7 +16,7 @@ public class ZeroPointDistributor implements Distributor {
 
     }
 
-    public void distributeSerie(XYChart.Series serie) {
+    public void distributeSerie(@NonNull XYChart.Series serie) {
         serie.getData()
                 .forEach(point -> {
 

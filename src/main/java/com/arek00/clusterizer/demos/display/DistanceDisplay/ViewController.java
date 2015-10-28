@@ -1,5 +1,6 @@
 package com.arek00.clusterizer.demos.display.DistanceDisplay;
 
+import com.arek00.clusterizer.demos.display.DistanceDisplay.Distribution.ClusterBasedDistributor;
 import com.arek00.clusterizer.demos.display.DistanceDisplay.Distribution.Distributor;
 import com.arek00.clusterizer.demos.display.DistanceDisplay.Distribution.ZeroPointDistributor;
 import com.arek00.clusterizer.demos.display.DistanceDisplay.Points.ClusterCenter;
@@ -59,6 +60,8 @@ public class ViewController {
 
 
     private void setTooltip(List<XYChart.Series> points) {
+        logger.info("Install tooltips");
+
         points.forEach(serie -> {
             serie.getData().forEach(point -> {
                 if (point instanceof XYChart.Data) {
@@ -72,14 +75,32 @@ public class ViewController {
     }
 
     public void onZerPointDistributionClick(ActionEvent actionEvent) {
+        logger.info("Zero point distribution button clicked");
         zeroPointDistributionButton.setDisable(true);
+
+        logger.info("Disabled button");
         Distributor distributor = new ZeroPointDistributor();
+
+        logger.info("Run distribution.");
         distributor.distribute(pointsScatteredChart.getData());
+
+        logger.info("Enable cluster based distribution if possible");
         clustersBasedDistributionButton.setDisable(! (clustersDistributionEnabled && true));
     }
 
     public void onClusterBasedDistributionClick(ActionEvent actionEvent) {
 
+        logger.info("Cluster based distribution button clicked.");
+        clustersBasedDistributionButton.setDisable(true);
+
+        logger.info("Disabled button");
+        Distributor distributor = new ClusterBasedDistributor();
+
+        logger.info("Run distribution");
+        distributor.distribute(pointsScatteredChart.getData());
+
+        logger.info("Enable zero point distribution button");
+        zeroPointDistributionButton.setDisable(false);
     }
 }
 

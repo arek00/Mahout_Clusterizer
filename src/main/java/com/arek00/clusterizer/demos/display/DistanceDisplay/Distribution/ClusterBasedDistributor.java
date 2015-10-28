@@ -6,6 +6,7 @@ import com.arek00.clusterizer.demos.display.DistanceDisplay.Points.ClusteredPoin
 import com.arek00.clusterizer.demos.display.DistanceDisplay.ViewController;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.XYChart;
+import lombok.NonNull;
 import org.apache.mahout.common.distance.SquaredEuclideanDistanceMeasure;
 import org.apache.mahout.math.Vector;
 
@@ -21,7 +22,7 @@ public class ClusterBasedDistributor implements Distributor {
     private XYChart.Series clustersSeries = null;
 
     @Override
-    public void distribute(ObservableList<XYChart.Series> chartData) {
+    public void distribute(@NonNull ObservableList<XYChart.Series> chartData) {
         clustersSeries = getClustersSeries(chartData);
         distributeClusters(clustersSeries);
 
