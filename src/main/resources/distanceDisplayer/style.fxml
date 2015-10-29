@@ -20,8 +20,8 @@
               </yAxis>
             </ScatterChart>
          </children></AnchorPane>
-      <Button fx:id="zeroPointDistributionButton" disable="true" layoutX="14.0" layoutY="474.0" mnemonicParsing="false" onAction="#onZerPointDistributionClick" text="Distribution Based On Zero Point" />
+      <Button fx:id="zeroPointDistributionButton" layoutX="14.0" layoutY="474.0" mnemonicParsing="false" onAction="#onZerPointDistributionClick" text="Distribution Based On Zero Point" />
       <Button fx:id="clustersBasedDistributionButton" disable="true" layoutX="14.0" layoutY="517.0" mnemonicParsing="false" onAction="#onClusterBasedDistributionClick" prefHeight="26.0" prefWidth="232.0" text="Distribution Based On Clusters" />
-      <Button fx:id="mdsDistributionButton" disable="true" layoutX="319.0" layoutY="487.0" mnemonicParsing="false" onAction="#onMDSDistributionClick" text="2D MultiDimensional Scaling Distribution" />
+      <Button fx:id="mdsDistributionButton" layoutX="319.0" layoutY="487.0" mnemonicParsing="false" onAction="#onMDSDistributionClick" text="2D MultiDimensional Scaling Distribution" />
    </children>
 </Pane>

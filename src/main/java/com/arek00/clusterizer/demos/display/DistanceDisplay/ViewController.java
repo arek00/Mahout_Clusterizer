@@ -3,6 +3,7 @@ package com.arek00.clusterizer.demos.display.DistanceDisplay;
 import com.arek00.clusterizer.Algorithms.MultidimensionalScaling.MultiDimensionalScalingEstimator;
 import com.arek00.clusterizer.demos.display.DistanceDisplay.Distribution.ClusterBasedDistributor;
 import com.arek00.clusterizer.demos.display.DistanceDisplay.Distribution.Distributor;
+import com.arek00.clusterizer.demos.display.DistanceDisplay.Distribution.MDSDistributor;
 import com.arek00.clusterizer.demos.display.DistanceDisplay.Distribution.ZeroPointDistributor;
 import com.arek00.clusterizer.demos.display.DistanceDisplay.Points.ClusterCenter;
 import javafx.event.ActionEvent;
@@ -79,6 +80,9 @@ public class ViewController {
     public void onZerPointDistributionClick(ActionEvent actionEvent) {
         logger.info("Zero point distribution button clicked");
         zeroPointDistributionButton.setDisable(true);
+        mdsDistributionButton.setDisable(true);
+        clustersBasedDistributionButton.setDisable(true);
+
 
         logger.info("Disabled button");
         Distributor distributor = new ZeroPointDistributor();
@@ -87,12 +91,16 @@ public class ViewController {
         distributor.distribute(pointsScatteredChart.getData());
 
         logger.info("Enable cluster based distribution if possible");
+
+        mdsDistributionButton.setDisable(false);
         clustersBasedDistributionButton.setDisable(!(clustersDistributionEnabled && true));
     }
 
     public void onClusterBasedDistributionClick(ActionEvent actionEvent) {
 
         logger.info("Cluster based distribution button clicked.");
+        zeroPointDistributionButton.setDisable(true);
+        mdsDistributionButton.setDisable(true);
         clustersBasedDistributionButton.setDisable(true);
 
         logger.info("Disabled button");
@@ -102,15 +110,26 @@ public class ViewController {
         distributor.distribute(pointsScatteredChart.getData());
 
         logger.info("Enable zero point distribution button");
+
+        mdsDistributionButton.setDisable(false);
         zeroPointDistributionButton.setDisable(false);
     }
 
     public void onMDSDistributionClick(ActionEvent actionEvent) {
+
+        logger.info("Start MDS points distribution.");
+        logger.info("Disabling buttons");
         mdsDistributionButton.setDisable(true);
         zeroPointDistributionButton.setDisable(true);
         clustersBasedDistributionButton.setDisable(true);
 
+        Distributor distributor = new MDSDistributor();
 
+        logger.info("Run MDS.");
+        distributor.distribute(pointsScatteredChart.getData());
+
+        zeroPointDistributionButton.setDisable(false);
+        clustersBasedDistributionButton.setDisable(!(clustersDistributionEnabled && true));
     }
 }
 
