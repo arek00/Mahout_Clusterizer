@@ -7,9 +7,14 @@ import com.arek00.clusterizer.demos.display.DistanceDisplay.ViewController;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.XYChart;
 import lombok.NonNull;
+import org.apache.commons.math.linear.EigenDecomposition;
+import org.apache.commons.math.linear.EigenDecompositionImpl;
 import org.apache.mahout.common.distance.DistanceMeasure;
 import org.apache.mahout.common.distance.SquaredEuclideanDistanceMeasure;
+import org.apache.mahout.math.Matrix;
+import org.apache.mahout.math.SparseMatrix;
 import org.apache.mahout.math.Vector;
+import org.apache.mahout.math.hadoop.decomposer.EigenVector;
 
 /**
  * Cluster-Based distributor sets clusters position in traditional
@@ -50,8 +55,6 @@ public class ClusterBasedDistributor implements Distributor {
         chartData.filtered(series ->
                 !series.getName().equals(ViewController.CLUSTERS_SERIES_NAME))
                 .forEach(seriesOfPoints -> distributeSeriesOfPoints(seriesOfPoints));
-
-
     }
 
     private void distributeSeriesOfPoints(XYChart.Series points) {
