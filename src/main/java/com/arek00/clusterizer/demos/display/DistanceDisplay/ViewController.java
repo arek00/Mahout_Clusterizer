@@ -1,5 +1,6 @@
 package com.arek00.clusterizer.demos.display.DistanceDisplay;
 
+import com.arek00.clusterizer.Algorithms.MultidimensionalScaling.MultiDimensionalScalingEstimator;
 import com.arek00.clusterizer.demos.display.DistanceDisplay.Distribution.ClusterBasedDistributor;
 import com.arek00.clusterizer.demos.display.DistanceDisplay.Distribution.Distributor;
 import com.arek00.clusterizer.demos.display.DistanceDisplay.Distribution.ZeroPointDistributor;
@@ -29,6 +30,7 @@ public class ViewController {
     public ScatterChart pointsScatteredChart;
     public Button zeroPointDistributionButton;
     public Button clustersBasedDistributionButton;
+    public Button mdsDistributionButton;
 
     private boolean clustersDistributionEnabled = false;
 
@@ -85,7 +87,7 @@ public class ViewController {
         distributor.distribute(pointsScatteredChart.getData());
 
         logger.info("Enable cluster based distribution if possible");
-        clustersBasedDistributionButton.setDisable(! (clustersDistributionEnabled && true));
+        clustersBasedDistributionButton.setDisable(!(clustersDistributionEnabled && true));
     }
 
     public void onClusterBasedDistributionClick(ActionEvent actionEvent) {
@@ -101,6 +103,14 @@ public class ViewController {
 
         logger.info("Enable zero point distribution button");
         zeroPointDistributionButton.setDisable(false);
+    }
+
+    public void onMDSDistributionClick(ActionEvent actionEvent) {
+        mdsDistributionButton.setDisable(true);
+        zeroPointDistributionButton.setDisable(true);
+        clustersBasedDistributionButton.setDisable(true);
+
+
     }
 }
 

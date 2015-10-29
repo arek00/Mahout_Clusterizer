@@ -1,7 +1,8 @@
-package com.arek00.clusterizer.Algorithms.MultidimensionalScaling;
+package com.arek00.clusterizer.Algorithms.MatrixUtils;
 
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.mahout.math.DenseMatrix;
 import org.apache.mahout.math.Matrix;
 
 /**
@@ -29,6 +30,19 @@ public class MatrixConverter {
 
         return realMatrix;
 
+    }
+
+    public static Matrix realMatrixToMahoutMatrix(RealMatrix matrix) {
+
+        Matrix mahoutMatrix = new DenseMatrix(matrix.getRowDimension(), matrix.getColumnDimension());
+
+        for(int row = 0; row < matrix.getRowDimension(); row++ ) {
+            for(int column = 0; column < matrix.getColumnDimension(); column++ ) {
+                mahoutMatrix.set(row,column,matrix.getEntry(row,column));
+            }
+        }
+
+        return mahoutMatrix;
     }
 
 }
