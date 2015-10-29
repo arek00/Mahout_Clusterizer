@@ -1,15 +1,18 @@
 package com.arek00.clusterizer.functionalityTests.matrixTests;
 
 
-import org.apache.commons.math.linear.EigenDecompositionImpl;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.commons.math3.linear.RealVector;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.mahout.math.DenseMatrix;
 import org.apache.mahout.math.Matrix;
-import org.apache.mahout.math.hadoop.decomposer.EigenVector;
 import org.apache.mahout.math.solver.EigenDecomposition;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.util.Arrays;
 
 public class EigenValuesTest {
 
@@ -70,6 +73,39 @@ public class EigenValuesTest {
         logger.info("D Matrix");
         logger.info(dMatrix);
 
+
+        Array2DRowRealMatrix realMatrix = new Array2DRowRealMatrix(matrixSize, matrixSize);
+        setRealMatrix(realMatrix, matrix);
+        logger.info("Real Matrix");
+        logger.info(realMatrix.toString());
+
+        org.apache.commons.math3.linear.EigenDecomposition decomposition =
+                new org.apache.commons.math3.linear.EigenDecomposition(realMatrix);
+
+        double[] realValuesArray = decomposition.getRealEigenvalues();
+
+        logger.info("Real values");
+
+        Arrays.stream(realValuesArray)
+                .forEach(value -> {
+                    logger.info(value);
+                });
+
+        RealVector vector = decomposition.getEigenvector(0);
+
+        logger.info(vector.toString());
+
     }
+
+
+    private void setRealMatrix(RealMatrix realMatrix, Matrix matrix) {
+        for(int row = 0; row < matrixSize; row++) {
+            for(int column = 0; column < matrixSize; column++) {
+                realMatrix.setEntry(row, column, matrix.get(row, column));
+            }
+        }
+    }
+
+
 
 }

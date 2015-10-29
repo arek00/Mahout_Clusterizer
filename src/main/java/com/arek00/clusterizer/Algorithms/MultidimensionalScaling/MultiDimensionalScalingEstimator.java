@@ -2,13 +2,18 @@ package com.arek00.clusterizer.Algorithms.MultidimensionalScaling;
 
 
 import com.arek00.clusterizer.Utils.VectorDistance;
+import lombok.Getter;
 import lombok.NonNull;
+import org.apache.commons.math3.linear.EigenDecomposition;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
 import org.apache.mahout.common.distance.DistanceMeasure;
 import org.apache.mahout.math.*;
-import org.apache.mahout.math.hadoop.decomposer.EigenVector;
-import org.apache.mahout.math.solver.EigenDecomposition;
+import org.apache.mahout.math.Vector;
 
 import java.awt.geom.Point2D;
+import java.util.*;
+import java.util.Arrays;
 
 public class MultiDimensionalScalingEstimator {
 
@@ -73,13 +78,94 @@ public class MultiDimensionalScalingEstimator {
         return jMatrix;
     }
 
-    private double[] getEigenValues(Matrix bMatrix) {
-        EigenDecomposition decomposition = new EigenDecomposition(bMatrix);
-        decomposition.getRealEigenvalues();
-        return null;
+    /**
+     * Return spatial configuration of points containing matrix of coordinates.
+     *
+     * @param bMatrix
+     * @return
+     */
+    private Matrix getSpatialConfiguration (Matrix bMatrix) {
+
+        RealMatrix realMatrix = MatrixConverter.mahoutMatrixToRealMatrix(bMatrix);
+        EigenDecomposition eigenDecomposition = new EigenDecomposition(realMatrix);
+
+
+return null;
+
+
+    }
+
+    /**
+     * Get eigenValues and vectors from eigen decomposition and set them in passed arguments.
+     *
+     * @param eigenDecomposition
+     */
+    private EigenPair[] setEigenValuesAndVectors (int mdsDimensions, int bMatrixSize, EigenDecomposition eigenDecomposition) {
+
+
+
+
+    }
+
+    private EigenPair[] getNMaxValues(int amount, EigenDecomposition decomposition) {
+        EigenPair[] pairs = new EigenPair[amount];
+
+        int[] largestValuesIndexes = getMaxValuesIndexes(amount, decomposition.getRealEigenvalues());
+
 
 
     }
 
 
+    private int[] getMaxValuesIndexes(int amount, double[] eigenValues) {
+
+        int[] largestValuesIndexes = new int[amount];
+
+        for(int iteration = 0; iteration < eigenValues.length; iteration++) {
+            if(iteration < eigenValues.length) {
+                largestValuesIndexes[iteration] = iteration;
+                continue;
+            }
+
+            int minIndex = getMinNumberIndex(largestValuesIndexes, eigenValues);
+
+            if(eigenValues[minIndex] < eigenValues[iteration]) {
+                largestValuesIndexes[minIndex] = iteration;
+            }
+        }
+
+        return largestValuesIndexes;
+    }
+
+
+    /**
+     * Get index of minimum value of array.
+     *
+     * @param indexes
+     * @param eigenValues
+     * @return
+     */
+    private int getMinNumberIndex(int[] indexes, double[] eigenValues) {
+        int minIndex = indexes[0];
+
+        for(int iteration = 1; iteration < indexes.length; iteration++) {
+            if(eigenValues[indexes[iteration]] < eigenValues[minIndex] ) {
+                minIndex = indexes[iteration];
+            }
+        }
+        return minIndex;
+    }
+
+
+}
+
+
+class EigenPair {
+    @Getter private double eigenValue;
+    @Getter private RealVector eigenVector;
+
+    public EigenPair(double eigenValue, RealVector eigenVector) {
+        this.eigenValue = eigenValue;
+        this.eigenVector = eigenVector;
+    }
 }
