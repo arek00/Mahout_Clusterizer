@@ -22,16 +22,17 @@ public class ZeroPointDistributor implements Distributor {
 
                     if (point instanceof XYChart.Data) {
                         XYChart.Data chartPoint = (XYChart.Data) point;
-                        setXValue(chartPoint);
+                        setCoordinates(chartPoint);
                     }
                 });
     }
 
-    private void setXValue(XYChart.Data point) {
+    private void setCoordinates(XYChart.Data point) {
         Object extraValue = point.getExtraValue();
 
         if(extraValue instanceof DisplayedPointEntity) {
             point.setXValue(((DisplayedPointEntity) extraValue).getDistanceFromZero());
+            point.setYValue(((DisplayedPointEntity) extraValue).getClusterId());
         }
     }
 

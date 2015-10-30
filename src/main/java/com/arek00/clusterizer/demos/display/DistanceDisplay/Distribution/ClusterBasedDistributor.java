@@ -78,6 +78,7 @@ public class ClusterBasedDistributor implements Distributor {
 
         double xValue = calculatePointXValue(clusteredPoint, getClusterCentroid(clusteredPoint.getClusterId()));
         point.setXValue(xValue);
+        point.setYValue(clusteredPoint.getClusterId());
     }
 
     private Vector getClusterCentroid(int clusterId) {

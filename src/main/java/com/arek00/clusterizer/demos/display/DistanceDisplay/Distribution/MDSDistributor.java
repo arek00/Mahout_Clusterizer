@@ -17,7 +17,7 @@ public class MDSDistributor implements Distributor {
     @Override
     public void distribute(ObservableList<XYChart.Series> chartData) {
         MultiDimensionalScalingEstimator estimator =
-                new MultiDimensionalScalingEstimator(new SquaredEuclideanDistanceMeasure(), 2);
+                new MultiDimensionalScalingEstimator(2);
 
         RealMatrix matrix = estimator.MDSEstimation(getVectorsFromChart(chartData));
         setPositions(matrix, chartData);

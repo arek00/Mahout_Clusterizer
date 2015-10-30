@@ -22,7 +22,7 @@ public class MultiDimensionalScalingEstimatorTest {
     private static int citiesAmount = 4;
     private static Vector[] denmarkCities = new Vector[citiesAmount];
     private static MultiDimensionalScalingEstimator mdsEstimator =
-            new MultiDimensionalScalingEstimator(new SquaredEuclideanDistanceMeasure(), 2);
+            new MultiDimensionalScalingEstimator(2);
 
     @BeforeClass
     public static void prepareTestData() {

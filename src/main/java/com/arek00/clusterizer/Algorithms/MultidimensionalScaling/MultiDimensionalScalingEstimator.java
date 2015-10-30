@@ -10,9 +10,9 @@ import org.apache.commons.math3.linear.*;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.mahout.common.distance.DistanceMeasure;
+import org.apache.mahout.common.distance.EuclideanDistanceMeasure;
 import org.apache.mahout.math.Vector;
 
-import java.awt.geom.Point2D;
 import java.util.Arrays;
 
 public class MultiDimensionalScalingEstimator {
@@ -22,14 +22,12 @@ public class MultiDimensionalScalingEstimator {
     private DistanceMeasure measure;
     private int dimensions;
 
-
-    public MultiDimensionalScalingEstimator(@NonNull DistanceMeasure measure, int dimensions) {
+    public MultiDimensionalScalingEstimator(int dimensions) {
         NumberValidator.greaterThan("Set number of dimensions greater than 0", 0, dimensions);
-        this.measure = measure;
+        this.measure = new EuclideanDistanceMeasure();
         this.dimensions = dimensions;
 
         logger.info("Number of dimensions to scale: " + dimensions);
-        logger.info("Distace measure method: " + measure.toString());
     }
 
     public RealMatrix MDSEstimation(@NonNull Vector[] points) {
@@ -54,37 +52,47 @@ public class MultiDimensionalScalingEstimator {
         RealMatrix proximitiesMatrix = new Array2DRowRealMatrix(matrixSize, matrixSize);
         int maxIteration = (int) Math.ceil(((double) matrixSize) / 2);
 
-        for (int row = 0; row < maxIteration; row++) {
+        for (int row = 0; row < matrixSize; row++) {
             for (int column = 0; column < matrixSize; column++) {
 
                 if (row == column) {
                     proximitiesMatrix.setEntry(column, row, 0d);
                 } else {
                     double distance = VectorDistance.distance(points[row], points[column], measure);
+                    distance = Math.pow(distance, 2d);
                     proximitiesMatrix.setEntry(column, row, distance);
                     proximitiesMatrix.setEntry(row, column, distance);
                 }
             }
         }
 
+        logger.info("Proximities matrix estimated");
+
         return proximitiesMatrix;
     }
 
     private RealMatrix applyDoubleCentering(RealMatrix proximitiesMatrix) {
+        logger.info("Applying double centering");
+
         int size = proximitiesMatrix.getColumnDimension();
         RealMatrix jMatrix = calculateJMatrix(size);
+
+        logger.info("jMatrix estimated.");
 
         RealMatrix bMatrix = jMatrix.scalarMultiply(-0.5);
         bMatrix = bMatrix.multiply(proximitiesMatrix);
         bMatrix = bMatrix.multiply(jMatrix);
+
+        logger.info("bMatrix estimated.");
         return bMatrix;
     }
 
     private RealMatrix calculateJMatrix(int size) {
         RealMatrix identityMatrix = Math3MatrixUtils.getIdentityMatrix(size, size, 1);
-        double nScalar = 1 / size;
-        RealMatrix onesMatrix = Math3MatrixUtils.getClerMatrix(size, size, 1);
-        RealMatrix jMatrix = identityMatrix.subtract(onesMatrix.scalarMultiply(nScalar));
+        double nScalar = 1d / size;
+        RealMatrix onesMatrix = Math3MatrixUtils.getClearMatrix(size, size, 1);
+        onesMatrix = onesMatrix.scalarMultiply(nScalar);
+        RealMatrix jMatrix = identityMatrix.subtract(onesMatrix);
 
         return jMatrix;
     }
@@ -110,7 +118,6 @@ public class MultiDimensionalScalingEstimator {
         logger.info("Get Eigen Vectors Matrix. Creater matrix: " +
                 eigenVectorsMatrix.getRowDimension() + "x" + eigenVectorsMatrix.getColumnDimension());
 
-
         int matrixStride = eigenVectorsMatrix.getColumnDimension();
         for(int column = 0; column < matrixStride; column++) {
             int arrayIndex = orderedAscend ? pairs.length -1 - column : column;
@@ -122,7 +129,7 @@ public class MultiDimensionalScalingEstimator {
     }
 
     private RealMatrix getEigenLambdasMatrix(int dimensions, EigenPair[] pairs, boolean orderedAscend) {
-        RealMatrix lambdasMatrix = Math3MatrixUtils.getClerMatrix(dimensions, dimensions, 0);
+        RealMatrix lambdasMatrix = Math3MatrixUtils.getClearMatrix(dimensions, dimensions, 0);
 
         for(int iteration = 0; iteration < dimensions; iteration++) {
             int index = orderedAscend ? pairs.length - 1 - iteration : iteration;

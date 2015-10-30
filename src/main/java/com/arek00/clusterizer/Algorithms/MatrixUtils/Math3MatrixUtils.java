@@ -6,7 +6,7 @@ import org.apache.commons.math3.linear.RealMatrix;
 
 public class Math3MatrixUtils {
 
-    public static RealMatrix getIdentityMatrix(int rows, int columns, int diagonalValue) {
+    public static RealMatrix getIdentityMatrix(int rows, int columns, double diagonalValue) {
         RealMatrix matrix = new Array2DRowRealMatrix(rows, columns);
 
         for (int row = 0; row < rows; row++) {
@@ -30,7 +30,7 @@ public class Math3MatrixUtils {
      * @param value
      * @return
      */
-    public static RealMatrix getClerMatrix(int rows, int columns, int value) {
+    public static RealMatrix getClearMatrix(int rows, int columns, double value) {
         RealMatrix matrix = new Array2DRowRealMatrix(rows, columns);
 
         for(int row = 0; row < rows; row++) {
