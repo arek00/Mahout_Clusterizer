@@ -1,4 +1,4 @@
-package com.arek00.clusterizer.Clustering.Clusterizers.StreamingKMeans;
+package com.arek00.clusterizer.Clustering.Centroids.StreamingKMeans;
 
 
 import com.arek00.clusterizer.Clustering.SequenceFile.SequenceFileWriter;
@@ -85,9 +85,6 @@ public class CentroidToClusterConverter {
 
     private Cluster convert(Centroid centroid, DistanceMeasure measure) {
         Kluster cluster = new Kluster(centroid.getVector(), centroid.getIndex(), measure);
-        cluster.calculateConvergence(0.5);
-
-        logger.info("Cluster is converged: " + cluster.isConverged());
 
         return cluster;
     }

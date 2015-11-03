@@ -1,5 +1,6 @@
 package com.arek00.clusterizer.Clustering.Clusterizers.KMeans;
 
+import com.arek00.clusterizer.Clustering.Clusterizers.Clusterizer;
 import lombok.NonNull;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -10,13 +11,20 @@ import java.io.IOException;
 /**
  * Cluster directory of articles with KMeans algorithm
  */
-public class KMeansClusterizer {
+public class KMeansClusterizer implements Clusterizer {
 
     private Configuration configuration;
+    private KMeansParameters parameters;
 
     public KMeansClusterizer(@NonNull Configuration configuration) {
         this.configuration = configuration;
+        this.parameters = new KMeansParameters.Builder().build();
     }
+
+    public void setParameters(@NonNull KMeansParameters parameters) {
+        this.parameters = parameters;
+    }
+
 
     /**
      * Run kmeans clustering algorithm process.
@@ -26,13 +34,13 @@ public class KMeansClusterizer {
      * @param vectors    - input path to vectorized set of data destined to clustering
      * @param centroids  - set of initial points from which algorithm start its job
      * @param output     - directory to save results, should be empty
-     * @param parameters - instance of KMeansParameters class
      * @throws InterruptedException
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    public void runClustering(
-            @NonNull Path vectors, @NonNull Path centroids, @NonNull Path output, @NonNull KMeansParameters parameters)
+    @Override
+    public Path runClustering(
+            @NonNull Path vectors, @NonNull Path centroids, @NonNull Path output)
             throws InterruptedException, IOException, ClassNotFoundException {
 
         KMeansDriver.run(
@@ -44,5 +52,8 @@ public class KMeansClusterizer {
                 parameters.getMaxIterations(),
                 true, 0, false
         );
+
+        return output;
     }
+
 }

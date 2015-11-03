@@ -1,4 +1,4 @@
-package com.arek00.clusterizer.Clustering.Clusterizers.StreamingKMeans;
+package com.arek00.clusterizer.Clustering.Centroids.StreamingKMeans;
 
 import com.google.common.collect.Lists;
 import org.apache.hadoop.conf.Configuration;
@@ -9,7 +9,6 @@ import org.apache.log4j.Logger;
 import org.apache.mahout.clustering.Cluster;
 import org.apache.mahout.clustering.canopy.Canopy;
 import org.apache.mahout.clustering.iterator.ClusterWritable;
-import org.apache.mahout.clustering.kmeans.KMeansDriver;
 import org.apache.mahout.clustering.kmeans.Kluster;
 import org.apache.mahout.common.distance.SquaredEuclideanDistanceMeasure;
 import org.apache.mahout.common.iterator.sequencefile.PathFilters;
@@ -19,9 +18,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.Collection;
-import java.util.Collections;
-
-import static org.junit.Assert.*;
 
 
 public class CentroidToClusterConverterTest {

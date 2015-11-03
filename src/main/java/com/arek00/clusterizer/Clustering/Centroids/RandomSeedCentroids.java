@@ -1,5 +1,6 @@
 package com.arek00.clusterizer.Clustering.Centroids;
 
+import com.arek00.clusterizer.Clustering.Centroids.CentroidsGenerator;
 import com.arek00.clusterizer.validators.NumberValidator;
 import lombok.NonNull;
 import org.apache.hadoop.conf.Configuration;
@@ -14,7 +15,7 @@ import java.io.IOException;
 /**
  * Create random centroids.
  */
-public class RandomSeedCentroids implements CentroidsGenerator{
+public class RandomSeedCentroids implements CentroidsGenerator {
 
     private Configuration configuration;
     private int kPoints = 2;

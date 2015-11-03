@@ -4,10 +4,16 @@ package com.arek00.clusterizer;
 import com.arek00.clusterizer.ArticleUtils.ArticleExtractor;
 import com.arek00.clusterizer.ArticleUtils.ArticlesDeserializer;
 import com.arek00.clusterizer.Clustering.Centroids.CanopyCentroids;
+import com.arek00.clusterizer.Clustering.Centroids.CentroidsGenerator;
+import com.arek00.clusterizer.Clustering.Centroids.RandomSeedCentroids;
+import com.arek00.clusterizer.Clustering.Centroids.StreamingKMeans.StreamingKMeansCentroids;
+import com.arek00.clusterizer.Clustering.Clusterizers.Clusterizer;
 import com.arek00.clusterizer.Clustering.Clusterizers.KMeans.KMeansClusterizer;
 import com.arek00.clusterizer.Clustering.Clusterizers.KMeans.KMeansParameters;
-import com.arek00.clusterizer.Clustering.Clusterizers.StreamingKMeans.StreamingKMeansClusterizer;
-import com.arek00.clusterizer.Clustering.Clusterizers.StreamingKMeans.StreamingKMeansParameters;
+import com.arek00.clusterizer.Clustering.Centroids.StreamingKMeans.StreamingKMeansParameters;
+import com.arek00.clusterizer.Clustering.Executors.ClusteringTask;
+import com.arek00.clusterizer.Clustering.Executors.Task;
+import com.arek00.clusterizer.Clustering.Executors.VectoringTask;
 import com.arek00.clusterizer.Clustering.SequenceFile.SequenceFileWriter;
 import com.arek00.clusterizer.Clustering.Tokenizers.StandardTokenizer;
 import com.arek00.clusterizer.Clustering.Tokenizers.Tokenizer;
@@ -17,6 +23,7 @@ import com.arek00.clusterizer.Clustering.Vectorizers.TFIDFVectorizer;
 import com.arek00.clusterizer.Clustering.Vectorizers.TFVectorizer;
 import com.arek00.webCrawler.Entities.Articles.IArticle;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.math.stat.clustering.KMeansPlusPlusClusterer;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
@@ -24,7 +31,9 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.FileAlreadyExistsException;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.apache.mahout.clustering.streaming.mapreduce.StreamingKMeansDriver;
 import org.apache.mahout.common.Pair;
+import org.apache.mahout.common.distance.CosineDistanceMeasure;
 import org.apache.mahout.common.distance.EuclideanDistanceMeasure;
 import org.apache.mahout.vectorizer.common.PartialVectorMerger;
 
@@ -33,7 +42,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
+import java.util.Random;
 
 
 public class Main {
@@ -45,102 +54,60 @@ public class Main {
 
         Configuration configuration = new Configuration();
 
-        Path articles = new Path("/home/arek/articles/testArticles");
-        Path output = new Path("/home/arek/clusterizer/differentArticlesTest");
+        Path articles = new Path("/home/arek/articles/articles02_11");
+        Path output = new Path("/home/arek/clusterizer/mds_testingArticles");
         Path sequenceFile = new Path(output, "sequenceFile");
-        Path tokenizedDirectory = new Path(output, "tokenizedFiles");
-        Path tfVectorsDirectory = new Path(output, "tfVectors");
-        Path tfidfVectorsDirectory = new Path(output, "tfidfVectors");
-        Path centroidsDirectory = new Path(output, "centroids");
-        Path kmeansDirectory = new Path(output, "kmeans");
-        Path streamingKMeansDirectory = new Path(output, "streamingKMeans");
-
-        TFParameters tfParameters = new TFParameters.Builder()
-                .maxNGramSize(1)
-                .minimumLLRValue(0.1f)
-                .minimumWordFrequency(1)
-                .normalizingPower(PartialVectorMerger.NO_NORMALIZING)
-                .build();
-
-        TFIDFParameters tfidfParameters = new TFIDFParameters.Builder()
-                .build();
 
         KMeansParameters kMeansParameters = new KMeansParameters.Builder()
-                .convergenceDelta(0.5f)
+                .convergenceDelta(0.9f)
                 .maxIteration(20)
                 .build();
 
 
         StreamingKMeansParameters streamingKMeansParameters = new StreamingKMeansParameters.Builder()
-                .clustersNumber(50)
+                .clustersNumber(6)
+                .distanceCutoff(StreamingKMeansDriver.INVALID_DISTANCE_CUTOFF)
+                .measureClass(EuclideanDistanceMeasure.class)
+                .searchSize(20)
+                .estimatedNumberMappedCluster(12)
+                .randomInit(true)
                 .maxIterations(50)
-                .searcherClass(org.apache.mahout.math.neighborhood.BruteSearch.class)
+                .searcherClass(org.apache.mahout.math.neighborhood.ProjectionSearch.class)
+                .numberOfProjections(3)
                 .build();
 
-        List<Pair<Writable, Writable>> articlesPairs = getArticlesPairs(ArticlesDeserializer.fromDirectory(articles.toString()));
 
+
+        KMeansClusterizer clusterizer = new KMeansClusterizer(configuration);
+        clusterizer.setParameters(kMeansParameters);
+
+//        CanopyCentroids centroidsGenerator = new CanopyCentroids(configuration);
+//        centroidsGenerator.setCanopyThresholds(500, 100);
+//        centroidsGenerator.setDistanceMeasure(new EuclideanDistanceMeasure());
+
+        StreamingKMeansCentroids centroidsGenerator = new StreamingKMeansCentroids(configuration);
+        centroidsGenerator.setParameters(streamingKMeansParameters);
+
+        List<Pair<Writable, Writable>> articlesPairs = getArticlesPairs(ArticlesDeserializer.fromDirectory(articles.toString()));
         SequenceFileWriter writer = new SequenceFileWriter(configuration);
-        KMeansClusterizer kmeans = new KMeansClusterizer(configuration);
 
         try {
 
             logger.info("Writing to articles to sequence file");
 
             writer.writeToSequenceFile(articlesPairs, sequenceFile, Text.class, Text.class);
+            Task vectoringTask = new VectoringTask(sequenceFile, new Path(output,"vectors"), configuration);
 
-            logger.info("Tokenizing articles");
-
-            Tokenizer tokenizer = new StandardTokenizer(configuration);
-            Path tokenizedDocuments = tokenizer.tokenize(sequenceFile, tokenizedDirectory);
-
-            logger.info("Tokenizing output path: " + tokenizedDocuments);
-            logger.info("Run TFVectorizer");
-
-            TFVectorizer tfVectorizer = new TFVectorizer(configuration);
-            Path tfVectors = tfVectorizer.createVectors(tokenizedDocuments, tfVectorsDirectory, tfParameters, 100);
-
-            TFIDFVectorizer vectorizer = new TFIDFVectorizer(configuration);
-            Path tfidfVectors = vectorizer.vectorize(tfVectors, tfidfVectorsDirectory, tfidfParameters, 100);
-
-            CanopyCentroids canopyCentroids = new CanopyCentroids(configuration);
-            canopyCentroids.setCanopyThresholds(20, 5);
-//            Path generatedCentroids = centroids.generateCentroids(tfidfVectors, centroidsDirectory);
-
-//            StreamingKMeansClusterizer clusterizer = new StreamingKMeansClusterizer(configuration);
-//            clusterizer.runClustering(tfidfVectors, new Path(output, "streamingKMeans"));
-
-//
-//            StreamingKMeansClusterizer clusterizer = new StreamingKMeansClusterizer(configuration);
-
-
-            Path centroids = null;
-
-            try {
-                centroids = canopyCentroids.generateCentroids(tfidfVectors, centroidsDirectory);
-            } catch (FileAlreadyExistsException e) {
-                FileUtils.deleteDirectory(new File(centroidsDirectory.toString()));
-                centroids = canopyCentroids.generateCentroids(tfidfVectors, centroidsDirectory);
-            }
-
-            KMeansClusterizer kMeansClusterizer = new KMeansClusterizer(configuration);
-//
-
-            try {
-                kMeansClusterizer.runClustering(tfidfVectors, centroids, kmeansDirectory, kMeansParameters);
-            } catch (FileAlreadyExistsException e) {
-                FileUtils.deleteDirectory(new File(kmeansDirectory.toString()));
-                kMeansClusterizer.runClustering(tfidfVectors, centroids, kmeansDirectory, kMeansParameters);
-            }
-
+            Path vectoringOutput = vectoringTask.execute();
+            Path centroids = centroidsGenerator.generateCentroids(vectoringOutput, new Path(output, "centroids"));
+            Task clusteringTask = new ClusteringTask(clusterizer, vectoringOutput, centroids, new Path(output, "clusters"));
+            clusteringTask.execute();
 
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
 
@@ -153,6 +120,10 @@ public class Main {
         });
 
         return articlesList;
+    }
+
+    private static void runClustering() {
+
     }
 
 }

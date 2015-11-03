@@ -1,4 +1,4 @@
-package com.arek00.clusterizer.Clustering.Clusterizers.StreamingKMeans;
+package com.arek00.clusterizer.Clustering.Centroids.StreamingKMeans;
 
 import com.arek00.clusterizer.validators.NumberValidator;
 import lombok.Getter;

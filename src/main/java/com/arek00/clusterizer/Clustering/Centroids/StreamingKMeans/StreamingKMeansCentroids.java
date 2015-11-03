@@ -1,35 +1,46 @@
-package com.arek00.clusterizer.Clustering.Clusterizers.StreamingKMeans;
+package com.arek00.clusterizer.Clustering.Centroids.StreamingKMeans;
 
 
+import com.arek00.clusterizer.Clustering.Centroids.CentroidsGenerator;
+import com.arek00.clusterizer.Utils.PathValidator;
 import lombok.NonNull;
-import org.apache.commons.math.stat.clustering.KMeansPlusPlusClusterer;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.apache.mahout.clustering.lda.LDAPrintTopics;
-import org.apache.mahout.clustering.streaming.cluster.BallKMeans;
 import org.apache.mahout.clustering.streaming.mapreduce.StreamingKMeansDriver;
 import org.apache.mahout.common.distance.DistanceMeasure;
-import org.apache.mahout.math.neighborhood.UpdatableSearcher;
 
 import java.io.IOException;
-import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
-public class StreamingKMeansClusterizer {
-    private static final Logger logger = LogManager.getLogger(StreamingKMeansClusterizer.class);
+public class StreamingKMeansCentroids implements CentroidsGenerator {
+    private static final Logger logger = LogManager.getLogger(StreamingKMeansCentroids.class);
 
     private Configuration configuration;
+    private StreamingKMeansParameters parameters;
 
-    public StreamingKMeansClusterizer(@NonNull Configuration configuration) {
+    public StreamingKMeansCentroids(@NonNull Configuration configuration) {
         this.configuration = configuration;
+        this.parameters = new StreamingKMeansParameters.Builder().build();
     }
 
-    public Path runClustering(@NonNull Path vectors, @NonNull Path output, @NonNull StreamingKMeansParameters parameters)
+    /**
+     * Set parameters for StreamingKMeans algorthm.
+     * If won't, default parameters will be used.
+     *
+     * @param parameters
+     */
+    public void setParameters(@NonNull StreamingKMeansParameters parameters) {
+        this.parameters = parameters;
+    }
+
+    public Path generateCentroids(@NonNull Path vectors, @NonNull Path output)
             throws InterruptedException, ClassNotFoundException, ExecutionException, IOException {
 
         configureOptionsForWorkers(configuration, parameters);
+        PathValidator.removePathIfExists(output);
+
         StreamingKMeansDriver.run(
                 this.configuration,
                 vectors,
@@ -75,6 +86,4 @@ public class StreamingKMeansClusterizer {
                 parameters.isReduceStreamingKMeans()
         );
     }
-
-
 }

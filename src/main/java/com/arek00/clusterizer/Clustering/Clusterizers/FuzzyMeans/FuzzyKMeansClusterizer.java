@@ -1,5 +1,6 @@
 package com.arek00.clusterizer.Clustering.Clusterizers.FuzzyMeans;
 
+import com.arek00.clusterizer.Clustering.Clusterizers.Clusterizer;
 import lombok.NonNull;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -11,12 +12,18 @@ import java.io.IOException;
 /**
  * Run FuzzyKMeans Clustering.
  */
-public class FuzzyKMeansClusterizer {
+public class FuzzyKMeansClusterizer implements Clusterizer{
 
     private Configuration configuration;
+    private FuzzyKMeansParameters parameters;
 
     public FuzzyKMeansClusterizer(@NonNull Configuration configuration) {
         this.configuration = configuration;
+        this.parameters = new FuzzyKMeansParameters.Builder().build();
+    }
+
+    public void setParameters(@NonNull FuzzyKMeansParameters parameters) {
+        this.parameters = parameters;
     }
 
     /**
@@ -30,7 +37,7 @@ public class FuzzyKMeansClusterizer {
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    public void runClustering(@NonNull Path vectors, @NonNull Path centroids, @NonNull Path output, @NonNull FuzzyKMeansParameters parameters) throws InterruptedException, IOException, ClassNotFoundException {
+    public Path runClustering(@NonNull Path vectors, @NonNull Path centroids, @NonNull Path output) throws InterruptedException, IOException, ClassNotFoundException {
         FuzzyKMeansDriver.run(
                 this.configuration,
                 vectors,
@@ -43,6 +50,7 @@ public class FuzzyKMeansClusterizer {
                 parameters.isEmittedMostLikely(),
                 0, false
         );
-    }
 
+        return output;
+    }
 }

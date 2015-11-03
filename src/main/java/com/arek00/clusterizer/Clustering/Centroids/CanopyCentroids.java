@@ -1,5 +1,6 @@
 package com.arek00.clusterizer.Clustering.Centroids;
 
+import com.arek00.clusterizer.Clustering.Centroids.CentroidsGenerator;
 import com.arek00.clusterizer.validators.NumberValidator;
 import lombok.NonNull;
 import org.apache.hadoop.conf.Configuration;
