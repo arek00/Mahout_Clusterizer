@@ -123,6 +123,8 @@ public class KMeansPlusPlusCentroids implements CentroidsGenerator {
                     cluster.observe(pointVector);
                 });
 
+        cluster.computeParameters();
+
 
         return cluster;
     }

@@ -20,6 +20,7 @@ import org.apache.mahout.common.iterator.sequencefile.PathFilters;
 import org.apache.mahout.common.iterator.sequencefile.PathType;
 import org.apache.mahout.common.iterator.sequencefile.SequenceFileDirValueIterable;
 import org.apache.mahout.math.Centroid;
+import org.apache.mahout.math.Vector;
 
 import java.io.IOException;
 import java.util.Iterator;

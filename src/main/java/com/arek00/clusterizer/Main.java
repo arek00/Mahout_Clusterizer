@@ -16,6 +16,7 @@ import com.arek00.clusterizer.Clustering.Centroids.StreamingKMeans.StreamingKMea
 import com.arek00.clusterizer.Clustering.Executors.ClusteringTask;
 import com.arek00.clusterizer.Clustering.Executors.Task;
 import com.arek00.clusterizer.Clustering.Executors.VectoringTask;
+import com.arek00.clusterizer.Clustering.Reducers.DimensionsReducer;
 import com.arek00.clusterizer.Clustering.SequenceFile.SequenceFileWriter;
 import com.arek00.clusterizer.Clustering.Tokenizers.StandardTokenizer;
 import com.arek00.clusterizer.Clustering.Tokenizers.Tokenizer;
@@ -57,7 +58,7 @@ public class Main {
         Configuration configuration = new Configuration();
 
         Path articles = new Path("/home/arek/articles/interia_02_11");
-        Path output = new Path("/home/arek/clusterizer/mds_testingArticles");
+        Path output = new Path("/home/arek/clusterizer/reducedDimensions");
         Path sequenceFile = new Path(output, "sequenceFile");
 
         KMeansParameters kMeansParameters = new KMeansParameters.Builder()
@@ -68,7 +69,7 @@ public class Main {
 
         KMeansPlusPlusParameters kMeansPPParameters =
                 new KMeansPlusPlusParameters.Builder()
-                .setClustersNumber(20)
+                .setClustersNumber(8)
                 .setIterationLimit(200)
                 .build();
 
@@ -76,6 +77,10 @@ public class Main {
 
         KMeansClusterizer clusterizer = new KMeansClusterizer(configuration);
         clusterizer.setParameters(kMeansParameters);
+//
+//        RandomSeedCentroids centroidsGenerator = new RandomSeedCentroids(configuration);
+//        centroidsGenerator.setKPoints(20);
+//        centroidsGenerator.setDistanceMeasure(new EuclideanDistanceMeasure());
 
 //        CanopyCentroids centroidsGenerator = new CanopyCentroids(configuration);
 //        centroidsGenerator.setCanopyThresholds(500, 100);
@@ -83,6 +88,8 @@ public class Main {
 
         KMeansPlusPlusCentroids centroidsGenerator = new KMeansPlusPlusCentroids(configuration);
         centroidsGenerator.setParameters(kMeansPPParameters);
+
+        DimensionsReducer reducer = new DimensionsReducer(configuration);
 
         List<Pair<Writable, Writable>> articlesPairs = getArticlesPairs(ArticlesDeserializer.fromDirectory(articles.toString()));
         SequenceFileWriter writer = new SequenceFileWriter(configuration);
@@ -95,8 +102,9 @@ public class Main {
             Task vectoringTask = new VectoringTask(sequenceFile, new Path(output,"vectors"), configuration);
 
             Path vectoringOutput = vectoringTask.execute();
-            Path centroids = centroidsGenerator.generateCentroids(vectoringOutput, new Path(output, "centroids"));
-            Task clusteringTask = new ClusteringTask(clusterizer, vectoringOutput, centroids, new Path(output, "clusters"));
+            Path reducedVectors = reducer.runReduction(vectoringOutput, new Path(output, "reducedVectors"), 2);
+            Path centroids = centroidsGenerator.generateCentroids(reducedVectors, new Path(output, "centroids"));
+            Task clusteringTask = new ClusteringTask(clusterizer, reducedVectors, centroids, new Path(output, "clusters"));
             clusteringTask.execute();
 
         } catch (IOException e) {
