@@ -5,6 +5,8 @@ import com.arek00.clusterizer.ArticleUtils.ArticleExtractor;
 import com.arek00.clusterizer.ArticleUtils.ArticlesDeserializer;
 import com.arek00.clusterizer.Clustering.Centroids.CanopyCentroids;
 import com.arek00.clusterizer.Clustering.Centroids.CentroidsGenerator;
+import com.arek00.clusterizer.Clustering.Centroids.KMeansPlusPlus.KMeansPlusPlusCentroids;
+import com.arek00.clusterizer.Clustering.Centroids.KMeansPlusPlus.KMeansPlusPlusParameters;
 import com.arek00.clusterizer.Clustering.Centroids.RandomSeedCentroids;
 import com.arek00.clusterizer.Clustering.Centroids.StreamingKMeans.StreamingKMeansCentroids;
 import com.arek00.clusterizer.Clustering.Clusterizers.Clusterizer;
@@ -54,26 +56,20 @@ public class Main {
 
         Configuration configuration = new Configuration();
 
-        Path articles = new Path("/home/arek/articles/articles02_11");
+        Path articles = new Path("/home/arek/articles/interia_02_11");
         Path output = new Path("/home/arek/clusterizer/mds_testingArticles");
         Path sequenceFile = new Path(output, "sequenceFile");
 
         KMeansParameters kMeansParameters = new KMeansParameters.Builder()
-                .convergenceDelta(0.9f)
+                .convergenceDelta(0.5f)
                 .maxIteration(20)
                 .build();
 
 
-        StreamingKMeansParameters streamingKMeansParameters = new StreamingKMeansParameters.Builder()
-                .clustersNumber(6)
-                .distanceCutoff(StreamingKMeansDriver.INVALID_DISTANCE_CUTOFF)
-                .measureClass(EuclideanDistanceMeasure.class)
-                .searchSize(20)
-                .estimatedNumberMappedCluster(12)
-                .randomInit(true)
-                .maxIterations(50)
-                .searcherClass(org.apache.mahout.math.neighborhood.ProjectionSearch.class)
-                .numberOfProjections(3)
+        KMeansPlusPlusParameters kMeansPPParameters =
+                new KMeansPlusPlusParameters.Builder()
+                .setClustersNumber(20)
+                .setIterationLimit(200)
                 .build();
 
 
@@ -85,8 +81,8 @@ public class Main {
 //        centroidsGenerator.setCanopyThresholds(500, 100);
 //        centroidsGenerator.setDistanceMeasure(new EuclideanDistanceMeasure());
 
-        StreamingKMeansCentroids centroidsGenerator = new StreamingKMeansCentroids(configuration);
-        centroidsGenerator.setParameters(streamingKMeansParameters);
+        KMeansPlusPlusCentroids centroidsGenerator = new KMeansPlusPlusCentroids(configuration);
+        centroidsGenerator.setParameters(kMeansPPParameters);
 
         List<Pair<Writable, Writable>> articlesPairs = getArticlesPairs(ArticlesDeserializer.fromDirectory(articles.toString()));
         SequenceFileWriter writer = new SequenceFileWriter(configuration);
